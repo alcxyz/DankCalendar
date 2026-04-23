@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alcxyz/dankcal/internal/caldav"
-	"github.com/alcxyz/dankcal/internal/config"
-	"github.com/alcxyz/dankcal/internal/ical"
-	"github.com/alcxyz/dankcal/internal/keyring"
-	"github.com/alcxyz/dankcal/internal/output"
+	"github.com/alcxyz/DankCalendar/internal/caldav"
+	"github.com/alcxyz/DankCalendar/internal/config"
+	"github.com/alcxyz/DankCalendar/internal/ical"
+	"github.com/alcxyz/DankCalendar/internal/keyring"
+	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
 func cmdNotify(args []string) {
@@ -75,7 +75,7 @@ func cmdNotify(args []string) {
 		}
 
 		exec.Command("notify-send", "-i", "calendar", "-u", "normal",
-			"-a", "dankcal", ev.Summary, strings.Join(body, "\n")).Run()
+			"-a", "DankCalendar", ev.Summary, strings.Join(body, "\n")).Run()
 
 		notified[key] = now.Format(time.RFC3339)
 		count++
@@ -104,7 +104,7 @@ func notifyStatePath() string {
 		home, _ := os.UserHomeDir()
 		cache = filepath.Join(home, ".cache")
 	}
-	return filepath.Join(cache, "dankcal", "notified.json")
+	return filepath.Join(cache, "dankcalendar", "notified.json")
 }
 
 func loadNotified() map[string]string {

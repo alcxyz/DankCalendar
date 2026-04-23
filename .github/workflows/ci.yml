@@ -23,7 +23,7 @@ jobs:
           go-version: "1.22"
 
       - name: Build binary
-        run: go build -ldflags "-X main.version=$(cat VERSION)" -o dankcal ./cmd/dankcal
+        run: go build -ldflags "-X main.version=$(cat VERSION)" -o dankcalendar ./cmd/dankcalendar
 
       - name: Check VERSION exists
         run: test -f VERSION

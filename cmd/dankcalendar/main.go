@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/alcxyz/dankcal/internal/output"
+	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
 var version = "dev"
@@ -55,7 +55,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: dankcal <command> [flags]\n\nCommands:\n")
+	fmt.Fprintf(os.Stderr, "Usage: dankcalendar <command> [flags]\n\nCommands:\n")
 	for name, desc := range commands {
 		fmt.Fprintf(os.Stderr, "  %-12s %s\n", name, desc)
 	}

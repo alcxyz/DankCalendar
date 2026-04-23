@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-04-23
-**Applies to:** `internal/output/`, `cmd/dankcal/`
+**Applies to:** `internal/output/`, `cmd/dankcalendar/`
 
 ## Context
 
@@ -10,7 +10,7 @@ The QML plugin consumes subprocess output via SplitParser, which reads stdout li
 
 ## Decision
 
-All dankcal commands output a single JSON object to stdout. Errors produce `{"error": "message"}` with a non-zero exit code. Diagnostic/progress messages go to stderr only. No interactive prompts — all input comes via CLI flags or stdin (for `setup` password entry).
+All dankcalendar commands output a single JSON object to stdout. Errors produce `{"error": "message"}` with a non-zero exit code. Diagnostic/progress messages go to stderr only. No interactive prompts — all input comes via CLI flags or stdin (for `setup` password entry).
 
 Command output contracts:
 - `list`: `{"events": [...], "count": N}`
@@ -26,7 +26,7 @@ Command output contracts:
 
 ## Consequences
 
-- QML integration requires zero changes to the SplitParser pattern — just point it at `dankcal` instead of `qcal-wrapper.py`.
-- Every command is independently testable: `dankcal list | jq .`
+- QML integration requires zero changes to the SplitParser pattern — just point it at `dankcalendar` instead of `qcal-wrapper.py`.
+- Every command is independently testable: `dankcalendar list | jq .`
 - Output must be a single line of JSON (no pretty-printing by default) to work with SplitParser's line-based reading.
 - A `--pretty` flag can be added for human debugging without affecting QML.

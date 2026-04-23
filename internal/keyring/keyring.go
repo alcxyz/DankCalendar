@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const service = "dankcal"
+const service = "dankcalendar"
 
 func Lookup(username string) (string, error) {
 	cmd := exec.Command("secret-tool", "lookup", "service", service, "account", username)
@@ -23,7 +23,7 @@ func Lookup(username string) (string, error) {
 
 func Store(username, password string) error {
 	cmd := exec.Command("secret-tool", "store",
-		"--label", fmt.Sprintf("dankcal CalDAV (%s)", username),
+		"--label", fmt.Sprintf("dankcalendar CalDAV (%s)", username),
 		"service", service, "account", username)
 	cmd.Stdin = strings.NewReader(password)
 	if err := cmd.Run(); err != nil {

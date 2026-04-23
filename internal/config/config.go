@@ -19,10 +19,10 @@ type Config struct {
 
 func Dir() string {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "dankcal")
+		return filepath.Join(xdg, "dankcalendar")
 	}
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".config", "dankcal")
+	return filepath.Join(home, ".config", "dankcalendar")
 }
 
 func Path() string {

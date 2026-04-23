@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alcxyz/dankcal/internal/caldav"
-	"github.com/alcxyz/dankcal/internal/config"
-	"github.com/alcxyz/dankcal/internal/keyring"
-	"github.com/alcxyz/dankcal/internal/output"
+	"github.com/alcxyz/DankCalendar/internal/caldav"
+	"github.com/alcxyz/DankCalendar/internal/config"
+	"github.com/alcxyz/DankCalendar/internal/keyring"
+	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
 func cmdSetup(args []string) {

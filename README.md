@@ -1,4 +1,4 @@
-# dankcal
+# DankCalendar
 
 CalDAV CLI client for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
 
@@ -8,18 +8,18 @@ Replaces the `qcal` submodule + `qcal-wrapper.py` Python bridge in [dms-qcal-cal
 
 | Command | Description |
 |---|---|
-| `dankcal list` | List upcoming events |
-| `dankcal calendars` | Discover available calendars |
-| `dankcal add` | Create a new event |
-| `dankcal edit` | Modify an existing event |
-| `dankcal delete` | Delete an event |
-| `dankcal notify` | Send desktop notifications for upcoming events |
-| `dankcal setup` | Configure CalDAV credentials |
+| `dankcalendar list` | List upcoming events |
+| `dankcalendar calendars` | Discover available calendars |
+| `dankcalendar add` | Create a new event |
+| `dankcalendar edit` | Modify an existing event |
+| `dankcalendar delete` | Delete an event |
+| `dankcalendar notify` | Send desktop notifications for upcoming events |
+| `dankcalendar setup` | Configure CalDAV credentials |
 
 ## Build
 
 ```sh
-go build -o dankcal ./cmd/dankcal
+go build -o dankcalendar ./cmd/dankcalendar
 ```
 
 ## Design

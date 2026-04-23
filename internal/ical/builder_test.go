@@ -44,7 +44,7 @@ func TestBuildVEvent_Timed(t *testing.T) {
 	if !strings.Contains(ics, "DTEND;TZID=Europe/Lisbon:20260424T110000") {
 		t.Error("wrong DTEND")
 	}
-	if !strings.Contains(ics, "PRODID:-//dankcal") {
+	if !strings.Contains(ics, "PRODID:-//DankCalendar") {
 		t.Error("missing PRODID")
 	}
 }

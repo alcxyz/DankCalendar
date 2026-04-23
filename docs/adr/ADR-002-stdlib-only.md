@@ -15,7 +15,7 @@ Use only the Go standard library. No `go.sum` file, no third-party imports.
 ## Alternatives Considered
 
 - **Use a CalDAV library (e.g. emersion/go-webdav)**: Provides higher-level abstractions but pulls in transitive dependencies and may not match our exact CalDAV subset (REPORT with calendar-data, PROPFIND for discovery).
-- **Use a CLI framework (e.g. cobra, urfave/cli)**: Convenient for complex CLIs, but dankcal's command surface is small (~7 subcommands) and `os.Args` parsing suffices.
+- **Use a CLI framework (e.g. cobra, urfave/cli)**: Convenient for complex CLIs, but DankCalendar's command surface is small (~7 subcommands) and `os.Args` parsing suffices.
 
 ## Consequences
 

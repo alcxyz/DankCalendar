@@ -1,3 +1,3 @@
-module github.com/alcxyz/dankcal
+module github.com/alcxyz/DankCalendar
 
 go 1.26.1

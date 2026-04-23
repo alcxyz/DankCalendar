@@ -34,7 +34,7 @@ func BuildVEvent(uid, summary, location, timezone string, start, end time.Time, 
 		locationLine = fmt.Sprintf("LOCATION:%s\n", EscapeICS(location))
 	}
 
-	return fmt.Sprintf("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//dankcal\nBEGIN:VEVENT\nUID:%s\n%s\n%s\nDTSTAMP:%s\nSUMMARY:%s\n%sEND:VEVENT\nEND:VCALENDAR\n",
+	return fmt.Sprintf("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//DankCalendar\nBEGIN:VEVENT\nUID:%s\n%s\n%s\nDTSTAMP:%s\nSUMMARY:%s\n%sEND:VEVENT\nEND:VCALENDAR\n",
 		uid, dtstart, dtend, now, summary, locationLine)
 }
 

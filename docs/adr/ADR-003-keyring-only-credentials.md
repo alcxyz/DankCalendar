@@ -21,6 +21,6 @@ Credentials are stored and retrieved exclusively through `secret-tool` (freedesk
 ## Consequences
 
 - `secret-tool` must be installed — this is standard on GNOME/KDE desktops where DankMaterialShell runs.
-- First-run setup requires `dankcal setup` which prompts for the password and stores it via `secret-tool store`.
+- First-run setup requires `dankcalendar setup` which prompts for the password and stores it via `secret-tool store`.
 - No passwords ever appear in config files, environment variables, or CLI arguments.
-- Headless/containerized environments without a keyring daemon cannot use dankcal (acceptable — this is a desktop widget).
+- Headless/containerized environments without a keyring daemon cannot use dankcalendar (acceptable — this is a desktop widget).

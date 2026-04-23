@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-04-23
-**Applies to:** `cmd/dankcal/main.go`, entire project
+**Applies to:** `cmd/dankcalendar/main.go`, entire project
 
 ## Context
 
@@ -10,7 +10,7 @@ The existing `dms-qcal-calendar` plugin uses a three-layer architecture: QML UI 
 
 ## Decision
 
-Replace both the qcal Go submodule and the Python wrapper with a single Go binary (`dankcal`) that speaks CalDAV natively and outputs JSON directly. QML calls dankcal as a subprocess and parses its stdout via SplitParser — exactly one process hop.
+Replace both the qcal Go submodule and the Python wrapper with a single Go binary (`dankcalendar`) that speaks CalDAV natively and outputs JSON directly. QML calls dankcalendar as a subprocess and parses its stdout via SplitParser — exactly one process hop.
 
 ## Alternatives Considered
 

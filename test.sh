@@ -39,7 +39,7 @@ fi
 
 echo "build"
 VERSION_LD="-X main.version=$VERSION"
-if go build -ldflags "$VERSION_LD" -o dankcal ./cmd/dankcal 2>/dev/null; then
+if go build -ldflags "$VERSION_LD" -o dankcalendar ./cmd/dankcalendar 2>/dev/null; then
     pass "binary compiles"
 else
     fail "build" "go build failed"
@@ -51,7 +51,7 @@ fi
 # ── CLI basics ──────────────────────────────────────────────────────
 
 echo "CLI"
-HELP=$(./dankcal --help 2>&1 || true)
+HELP=$(./dankcalendar --help 2>&1 || true)
 assert_contains "help shows list command" "list" "$HELP"
 assert_contains "help shows calendars command" "calendars" "$HELP"
 assert_contains "help shows add command" "add" "$HELP"
@@ -60,13 +60,13 @@ assert_contains "help shows delete command" "delete" "$HELP"
 assert_contains "help shows notify command" "notify" "$HELP"
 assert_contains "help shows setup command" "setup" "$HELP"
 
-VERSION_OUT=$(./dankcal --version 2>&1)
+VERSION_OUT=$(./dankcalendar --version 2>&1)
 assert_eq "version output matches VERSION file" "$VERSION" "$VERSION_OUT"
 
 # ── JSON error output ───────────────────────────────────────────────
 
 echo "JSON output"
-ERROR_OUT=$(./dankcal list 2>/dev/null || true)
+ERROR_OUT=$(./dankcalendar list 2>/dev/null || true)
 assert_contains "error output is JSON" '"error"' "$ERROR_OUT"
 
 # ── stdlib-only (no go.sum) ─────────────────────────────────────────
@@ -81,7 +81,7 @@ fi
 # ── project structure ───────────────────────────────────────────────
 
 echo "project structure"
-for dir in cmd/dankcal internal/caldav internal/ical internal/keyring internal/config internal/output docs/adr; do
+for dir in cmd/dankcalendar internal/caldav internal/ical internal/keyring internal/config internal/output docs/adr; do
     if [ -d "$dir" ]; then
         pass "directory exists: $dir"
     else
@@ -118,7 +118,7 @@ fi
 
 # ── cleanup ─────────────────────────────────────────────────────────
 
-rm -f dankcal
+rm -f dankcalendar
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
