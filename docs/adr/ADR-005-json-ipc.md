@@ -6,7 +6,7 @@
 
 ## Context
 
-The QML plugin consumes subprocess output via SplitParser, which reads stdout line-by-line. The existing Python wrapper outputs JSON objects that QML parses with `JSON.parse()`. This pattern works well — it is simple, debuggable (pipe to `jq`), and requires no IPC framework.
+The QML plugin consumes subprocess output via `SplitParser`, which reads stdout line-by-line and parses each line with `JSON.parse()`. This pattern is simple, debuggable (`dankcalendar list | jq .`), and requires no IPC framework.
 
 ## Decision
 
@@ -26,7 +26,7 @@ Command output contracts:
 
 ## Consequences
 
-- QML integration requires zero changes to the SplitParser pattern — just point it at `dankcalendar` instead of `qcal-wrapper.py`.
+- QML integration uses the standard `SplitParser` pattern already established in DankMaterialShell plugins.
 - Every command is independently testable: `dankcalendar list | jq .`
 - Output must be a single line of JSON (no pretty-printing by default) to work with SplitParser's line-based reading.
 - A `--pretty` flag can be added for human debugging without affecting QML.
