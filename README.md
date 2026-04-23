@@ -1,8 +1,8 @@
 # DankCalendar
 
-CalDAV CLI client for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
+CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
 
-Replaces the `qcal` submodule + `qcal-wrapper.py` Python bridge in [dms-qcal-calendar](https://github.com/alcxyz/dms-qcal-calendar) with a single binary that outputs JSON directly.
+Fully replaces [dms-qcal-calendar](https://github.com/alcxyz/dms-qcal-calendar) — no Python, no qcal submodule, no wrapper scripts.
 
 ## Commands
 
@@ -15,6 +15,24 @@ Replaces the `qcal` submodule + `qcal-wrapper.py` Python bridge in [dms-qcal-cal
 | `dankcalendar delete` | Delete an event |
 | `dankcalendar notify` | Send desktop notifications for upcoming events |
 | `dankcalendar setup` | Configure CalDAV credentials |
+
+## Install as DMS Plugin
+
+1. Build the binary and place it in PATH:
+   ```sh
+   go build -o dankcalendar ./cmd/dankcalendar
+   install dankcalendar ~/.local/bin/
+   ```
+
+2. Copy the plugin directory to DMS:
+   ```sh
+   cp -r . ~/.config/DankMaterialShell/plugins/DankCalendar/
+   ```
+
+3. Configure your CalDAV account in DMS plugin settings, or run:
+   ```sh
+   dankcalendar setup
+   ```
 
 ## Build
 
