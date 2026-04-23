@@ -2,8 +2,6 @@
 
 CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
 
-Fully replaces [dms-qcal-calendar](https://github.com/alcxyz/dms-qcal-calendar) — no Python, no qcal submodule, no wrapper scripts.
-
 ## Commands
 
 | Command | Description |

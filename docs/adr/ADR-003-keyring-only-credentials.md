@@ -6,7 +6,7 @@
 
 ## Context
 
-The existing Python wrapper supports both GNOME Keyring (via `secret-tool`) and plaintext passwords in `~/.config/qcal/config.json`. Plaintext credential storage is a security risk — config files can be accidentally committed, backed up unencrypted, or read by other processes.
+Plaintext credential storage is a security risk — config files can be accidentally committed, backed up unencrypted, or read by other processes. The config file format is convenient for URLs and usernames but is the wrong place for secrets.
 
 ## Decision
 
@@ -14,7 +14,7 @@ Credentials are stored and retrieved exclusively through `secret-tool` (freedesk
 
 ## Alternatives Considered
 
-- **Support both keyring and plaintext fallback**: Matches the old behavior but perpetuates the insecure path. Users who "just want it to work" will choose plaintext and stay there.
+- **Support both keyring and plaintext fallback**: Perpetuates the insecure path. Users who "just want it to work" will choose plaintext and stay there.
 - **Encrypt passwords in the config file**: Adds complexity (key management, encryption scheme) for marginal benefit over the OS keyring.
 - **Use libsecret directly via CGo**: Avoids the `secret-tool` subprocess but adds CGo build complexity and breaks cross-compilation.
 
