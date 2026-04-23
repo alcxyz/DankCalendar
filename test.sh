@@ -98,6 +98,44 @@ for file in VERSION LICENSE .gitignore go.mod docs/adr/README.md; do
     fi
 done
 
+# ── DMS plugin structure ───────────────────────────────────────────
+
+echo "plugin"
+for file in plugin.json CalendarWidget.qml CalendarSettings.qml; do
+    if [ -f "$file" ]; then
+        pass "plugin file exists: $file"
+    else
+        fail "plugin" "missing file: $file"
+    fi
+done
+
+# Validate plugin.json fields
+if [ -f plugin.json ]; then
+    for field in id name type component settings; do
+        if grep -q "\"$field\"" plugin.json; then
+            pass "plugin.json has field: $field"
+        else
+            fail "plugin.json" "missing field: $field"
+        fi
+    done
+
+    PLUGIN_ID=$(grep '"id"' plugin.json | sed 's/.*: *"\([^"]*\)".*/\1/')
+    assert_eq "plugin.json id is dankCalendar" "dankCalendar" "$PLUGIN_ID"
+
+    # pluginId consistency across QML files
+    if grep -q "pluginId: \"$PLUGIN_ID\"" CalendarWidget.qml; then
+        pass "CalendarWidget.qml pluginId matches plugin.json"
+    else
+        fail "pluginId" "CalendarWidget.qml pluginId does not match plugin.json id"
+    fi
+
+    if grep -q "pluginId: \"$PLUGIN_ID\"" CalendarSettings.qml; then
+        pass "CalendarSettings.qml pluginId matches plugin.json"
+    else
+        fail "pluginId" "CalendarSettings.qml pluginId does not match plugin.json id"
+    fi
+fi
+
 # ── ADR count ───────────────────────────────────────────────────────
 
 echo "ADRs"

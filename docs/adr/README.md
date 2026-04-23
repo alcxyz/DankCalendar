@@ -8,3 +8,4 @@
 | [ADR-004](ADR-004-security-defaults.md) | Security by default | security |
 | [ADR-005](ADR-005-json-ipc.md) | JSON-over-stdout IPC with QML | integration |
 | [ADR-006](ADR-006-branch-protection.md) | Protected main branch with dev workflow | process |
+| [ADR-007](ADR-007-standalone-dms-plugin.md) | Standalone DMS plugin replaces dms-qcal-calendar | architecture |
