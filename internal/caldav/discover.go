@@ -17,29 +17,29 @@ type DiscoveredCalendar struct {
 func (c *Client) Discover() ([]DiscoveredCalendar, error) {
 	base := strings.TrimRight(c.BaseURL.String(), "/")
 
-	// Step 1: Try .well-known/caldav redirect to find effective base
-	effectiveBase := base
-	wellKnown := base + "/.well-known/caldav"
+	// Step 1: Try .well-known/caldav at the host root (RFC 5785/6764).
+	// .well-known URIs must be at the server root, not appended to the path.
+	effectiveBase := c.BaseURL.Scheme + "://" + c.BaseURL.Host
+	wellKnown := effectiveBase + "/.well-known/caldav"
 	_, redirected, err := c.Propfind(wellKnown, propfindPrincipal, "0")
 	if err == nil {
-		u, err := url.Parse(redirected)
-		if err == nil {
+		if u, err := url.Parse(redirected); err == nil {
 			effectiveBase = u.Scheme + "://" + u.Host
 		}
 	}
 
-	// Step 2: Find current-user-principal
-	data, _, err := c.Propfind(effectiveBase+"/", propfindPrincipal, "0")
+	// Step 2: Find current-user-principal at the provided URL.
+	data, _, err := c.Propfind(base+"/", propfindPrincipal, "0")
 	if err != nil {
 		return nil, fmt.Errorf("principal lookup: %w", err)
 	}
 
-	principalHref, err := extractPrincipalHref(data)
-	if err != nil {
-		return nil, err
+	// If current-user-principal is not reported (e.g. Google Calendar returns
+	// <unauthenticated/> or omits it), treat the provided URL as the principal.
+	principalURL := base + "/"
+	if principalHref, err := extractPrincipalHref(data); err == nil {
+		principalURL = resolveHref(effectiveBase, principalHref)
 	}
-
-	principalURL := resolveHref(effectiveBase, principalHref)
 
 	// Step 3: Find calendar-home-set
 	data, _, err = c.Propfind(principalURL, propfindHomeSet, "0")
