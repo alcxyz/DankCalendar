@@ -2,7 +2,7 @@
   "id": "dankCalendar",
   "name": "DankCalendar",
   "description": "CalDAV calendar with events, notifications, and event management",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "alc",
   "icon": "calendar_month",
   "type": "widget",

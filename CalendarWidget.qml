@@ -88,7 +88,8 @@ PluginComponent {
         syncProc.command = ["dankcalendar", "discover",
             "--url", caldavUrl,
             "--username", caldavUsername,
-            "--password", caldavPassword];
+            "--password", caldavPassword,
+            "--append"];
         syncProc.running = true;
     }
 

@@ -14,6 +14,7 @@ func cmdDiscover(args []string) {
 	url := fs.String("url", "", "CalDAV server URL")
 	user := fs.String("username", "", "CalDAV username")
 	pw := fs.String("password", "", "CalDAV password")
+	appendMode := fs.Bool("append", false, "append discovered calendars to existing config instead of replacing")
 	fs.Parse(args)
 
 	if *url == "" || *user == "" || *pw == "" {
@@ -56,19 +57,38 @@ func cmdDiscover(args []string) {
 	// Detect timezone
 	tz := detectTimezone()
 
-	// Build and save config
-	var cals []config.Calendar
+	// Build new calendar entries
+	var newCals []config.Calendar
 	for _, d := range discovered {
-		cals = append(cals, config.Calendar{
+		newCals = append(newCals, config.Calendar{
 			URL:      d.URL,
 			Username: *user,
 		})
 	}
 
-	cfg := &config.Config{
-		Timezone:  tz,
-		Calendars: cals,
+	// In append mode, merge with existing config (preserving other accounts)
+	var cfg *config.Config
+	if *appendMode {
+		existing, err := config.Load()
+		if err == nil {
+			// Remove any existing entries for this username, then append fresh ones
+			var kept []config.Calendar
+			for _, c := range existing.Calendars {
+				if c.Username != *user {
+					kept = append(kept, c)
+				}
+			}
+			cfg = &config.Config{
+				Timezone:  existing.Timezone,
+				Calendars: append(kept, newCals...),
+			}
+		} else {
+			cfg = &config.Config{Timezone: tz, Calendars: newCals}
+		}
+	} else {
+		cfg = &config.Config{Timezone: tz, Calendars: newCals}
 	}
+
 	if err := config.Save(cfg); err != nil {
 		exitError("save config: " + err.Error())
 	}
