@@ -7,3 +7,4 @@
 | [ADR-003](ADR-003-keyring-only-credentials.md) | Keyring-only credentials via secret-tool | security |
 | [ADR-004](ADR-004-security-defaults.md) | Security by default | security |
 | [ADR-005](ADR-005-json-ipc.md) | JSON-over-stdout IPC with QML | integration |
+| [ADR-006](ADR-006-branch-protection.md) | Protected main branch with dev workflow | process |
