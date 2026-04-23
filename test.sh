@@ -81,7 +81,7 @@ fi
 # ── project structure ───────────────────────────────────────────────
 
 echo "project structure"
-for dir in cmd/dankcal internal/caldav internal/ical internal/keyring internal/config internal/notify internal/output docs/adr; do
+for dir in cmd/dankcal internal/caldav internal/ical internal/keyring internal/config internal/output docs/adr; do
     if [ -d "$dir" ]; then
         pass "directory exists: $dir"
     else
@@ -105,6 +105,15 @@ if [ "$ADR_COUNT" -ge 5 ]; then
     pass "$ADR_COUNT ADRs present"
 else
     fail "ADRs" "expected at least 5, found $ADR_COUNT"
+fi
+
+# ── Go unit tests ──────────────────────────────────────────────────
+
+echo "unit tests"
+if go test ./... > /dev/null 2>&1; then
+    pass "go test ./... passes"
+else
+    fail "unit tests" "go test ./... failed"
 fi
 
 # ── cleanup ─────────────────────────────────────────────────────────

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/alcxyz/dankcal/internal/output"
 )
 
 var version = "dev"
@@ -25,6 +26,7 @@ func main() {
 	}
 
 	cmd := os.Args[1]
+	args := os.Args[2:]
 
 	switch cmd {
 	case "--help", "-h":
@@ -32,19 +34,19 @@ func main() {
 	case "--version", "-v":
 		fmt.Println(version)
 	case "list":
-		exitError("not yet implemented: list")
+		cmdList(args)
 	case "calendars":
-		exitError("not yet implemented: calendars")
+		cmdCalendars(args)
 	case "add":
-		exitError("not yet implemented: add")
+		cmdAdd(args)
 	case "edit":
-		exitError("not yet implemented: edit")
+		cmdEdit(args)
 	case "delete":
-		exitError("not yet implemented: delete")
+		cmdDelete(args)
 	case "notify":
-		exitError("not yet implemented: notify")
+		cmdNotify(args)
 	case "setup":
-		exitError("not yet implemented: setup")
+		cmdSetup(args)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		usage()
@@ -61,7 +63,6 @@ func usage() {
 }
 
 func exitError(msg string) {
-	out, _ := json.Marshal(map[string]string{"error": msg})
-	fmt.Println(string(out))
+	output.Error(msg)
 	os.Exit(1)
 }

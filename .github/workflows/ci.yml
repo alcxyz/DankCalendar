@@ -28,6 +28,9 @@ jobs:
       - name: Check VERSION exists
         run: test -f VERSION
 
+      - name: Go unit tests
+        run: go test ./...
+
       - name: Run tests
         run: bash test.sh
 
