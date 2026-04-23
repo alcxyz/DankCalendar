@@ -16,7 +16,8 @@ var commands = map[string]string{
 	"edit":      "Modify an existing event",
 	"delete":    "Delete an event",
 	"notify":    "Send desktop notifications for upcoming events",
-	"setup":     "Configure CalDAV credentials",
+	"setup":     "Configure CalDAV credentials (interactive)",
+	"discover":  "Discover calendars and store credentials (non-interactive)",
 }
 
 func main() {
@@ -47,6 +48,8 @@ func main() {
 		cmdNotify(args)
 	case "setup":
 		cmdSetup(args)
+	case "discover":
+		cmdDiscover(args)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		usage()

@@ -59,6 +59,7 @@ assert_contains "help shows edit command" "edit" "$HELP"
 assert_contains "help shows delete command" "delete" "$HELP"
 assert_contains "help shows notify command" "notify" "$HELP"
 assert_contains "help shows setup command" "setup" "$HELP"
+assert_contains "help shows discover command" "discover" "$HELP"
 
 VERSION_OUT=$(./dankcalendar --version 2>&1)
 assert_eq "version output matches VERSION file" "$VERSION" "$VERSION_OUT"
