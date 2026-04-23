@@ -15,7 +15,7 @@ Apply defense-in-depth across all layers:
 - **HTTPS-only**: Reject non-TLS CalDAV URLs. No `--insecure` flag.
 - **ICS escaping**: All user-supplied text (summary, description, location) is escaped per RFC 5545 before embedding in ICS templates.
 - **Filename validation**: Calendar and event filenames are validated against path traversal (`../`, null bytes).
-- **URL construction**: Use `url.ResolveReference()` for all URL building — never string concatenation.
+- **URL construction**: Use `url.ResolveReference()` for all URL building — never string concatenation. This applies to `resolveHref` in `internal/caldav/discover.go` (fixed in v0.3.3; prior to v0.3.2 the function used string concatenation, producing malformed paths when `effectiveBase` contained a non-root path).
 - **Config permissions**: Config files are created with `0600` permissions.
 - **No shell expansion**: All subprocess calls use `exec.Command` with explicit argument lists, never shell interpolation.
 

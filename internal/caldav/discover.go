@@ -64,10 +64,15 @@ func (c *Client) Discover() ([]DiscoveredCalendar, error) {
 }
 
 func resolveHref(base, href string) string {
-	if strings.HasPrefix(href, "http://") || strings.HasPrefix(href, "https://") {
-		return href
+	b, err := url.Parse(base)
+	if err != nil {
+		return base + href
 	}
-	return base + href
+	ref, err := url.Parse(href)
+	if err != nil {
+		return base + href
+	}
+	return b.ResolveReference(ref).String()
 }
 
 // XML parsing for multistatus responses
