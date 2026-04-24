@@ -2,6 +2,8 @@
 
 CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
 
+![Screenshot](docs/screenshot.png)
+
 ## Commands
 
 | Command | Description |
@@ -14,12 +16,32 @@ CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/Da
 | `dankcalendar notify` | Send desktop notifications for upcoming events |
 | `dankcalendar setup` | Configure CalDAV credentials |
 
-## Install as DMS Plugin
+## Installation
+
+### Nix (flake)
+
+Add as a `flake = false` input and include in your DMS plugin configuration:
+
+```nix
+inputs.dms-plugin-calendar = {
+  url = "github:alcxyz/DankCalendar";
+  flake = false;
+};
+```
+
+```nix
+programs.dank-material-shell.plugins.DankCalendar = {
+  enable = true;
+  src = inputs.dms-plugin-calendar;
+};
+```
+
+### Manual
 
 1. Build the binary and place it in PATH:
    ```sh
    go build -o dankcalendar ./cmd/dankcalendar
-   install dankcalendar ~/.local/bin/
+   cp dankcalendar ~/.local/bin/
    ```
 
 2. Copy the plugin directory to DMS:
@@ -56,3 +78,10 @@ See [docs/adr/](docs/adr/) for architectural decision records.
 ## License
 
 MIT
+
+<details>
+<summary>Support</summary>
+
+- **BTC:** `bc1pzdt3rjhnme90ev577n0cnxvlwvclf4ys84t2kfeu9rd3rqpaaafsgmxrfa`
+- **ETH / ERC-20:** `0x2122c7817381B74762318b506c19600fF8B8372c`
+</details>
