@@ -9,3 +9,4 @@
 | [ADR-005](ADR-005-json-ipc.md) | JSON-over-stdout IPC with QML | integration |
 | [ADR-006](ADR-006-branch-protection.md) | Protected main branch with dev workflow | process |
 | [ADR-007](ADR-007-standalone-dms-plugin.md) | DankCalendar bundles its own DMS plugin layer | architecture |
+| [ADR-008](ADR-008-timezone-normalization-and-recurrence-expansion.md) | Timezone normalization and server-side recurrence expansion | data |

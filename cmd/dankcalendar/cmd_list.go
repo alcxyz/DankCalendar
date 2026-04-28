@@ -26,6 +26,8 @@ func cmdList(args []string) {
 	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	end := start.AddDate(0, 0, *days)
 
+	startDate := start.Format("2006-01-02")
+
 	var allEvents []ical.Event
 
 	for i, cal := range cfg.Calendars {
@@ -45,10 +47,23 @@ func cmdList(args []string) {
 		}
 
 		for _, r := range results {
-			ev := ical.ParseVEvent(r.ICSData, r.Href, i)
-			if ev != nil {
-				allEvents = append(allEvents, *ev)
+			ev := ical.ParseVEvent(r.ICSData, r.Href, i, cfg.Timezone)
+			if ev == nil {
+				continue
 			}
+			// Check if event start is before our query range
+			evDate := ev.Start
+			if idx := len("2006-01-02"); len(evDate) > idx {
+				evDate = evDate[:idx]
+			}
+			if evDate < startDate {
+				// Server didn't expand this recurring event — try to
+				// compute the occurrence that falls within our range.
+				if !ical.AdjustRecurrence(ev, start, end) {
+					continue // no RRULE or no occurrence in range
+				}
+			}
+			allEvents = append(allEvents, *ev)
 		}
 	}
 

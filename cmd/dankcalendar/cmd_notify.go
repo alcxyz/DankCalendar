@@ -44,7 +44,7 @@ func cmdNotify(args []string) {
 			continue
 		}
 		for _, r := range results {
-			ev := ical.ParseVEvent(r.ICSData, r.Href, i)
+			ev := ical.ParseVEvent(r.ICSData, r.Href, i, cfg.Timezone)
 			if ev != nil && !ev.AllDay {
 				allEvents = append(allEvents, *ev)
 			}
