@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./VERSION);
+        version = (builtins.fromJSON (builtins.readFile ./plugin.json)).version;
       in {
         packages = rec {
           dankcalendar = pkgs.callPackage ./default.nix { inherit version; };
