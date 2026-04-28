@@ -10,10 +10,10 @@ PluginComponent {
     pluginId: "dankCalendar"
 
     // ── Persisted settings ──────────────────────────────────────────
-    property int lookAheadDays: 7
+    property int lookAheadDays: 14
     property int refreshInterval: 5       // minutes
     property bool showLocation: true
-    property bool showCalendarName: false
+    property bool showCalendarName: true
     property bool notificationsEnabled: true
     property int notifyMinutes: 15        // notify N minutes before event
     property string caldavUrl: ""
@@ -66,10 +66,10 @@ PluginComponent {
     // ── Load settings ───────────────────────────────────────────────
     function loadSettings() {
         if (!pluginService || !pluginService.loadPluginData) return;
-        lookAheadDays = pluginService.loadPluginData(pluginId, "lookAheadDays", 7) || 7;
+        lookAheadDays = pluginService.loadPluginData(pluginId, "lookAheadDays", 14) || 14;
         refreshInterval = pluginService.loadPluginData(pluginId, "refreshInterval", 5) || 5;
         showLocation = pluginService.loadPluginData(pluginId, "showLocation", true) !== false;
-        showCalendarName = pluginService.loadPluginData(pluginId, "showCalendarName", false) === true;
+        showCalendarName = pluginService.loadPluginData(pluginId, "showCalendarName", true) !== false;
         notificationsEnabled = pluginService.loadPluginData(pluginId, "notificationsEnabled", true) !== false;
         notifyMinutes = pluginService.loadPluginData(pluginId, "notifyMinutes", 15) || 15;
         caldavUrl = pluginService.loadPluginData(pluginId, "caldavUrl", "") || "";
@@ -418,9 +418,12 @@ PluginComponent {
         var ev = events[0];
         var timeStr = formatEventTime(ev);
         var dayPrefix = eventDayPrefix(ev);
+        var calName = calendarNameForIndex(ev.calendarIndex);
         var maxTitle = 20;
         var title = ev.title.length > maxTitle ? ev.title.substring(0, maxTitle - 2) + "\u2026" : ev.title;
-        return dayPrefix + timeStr + " " + title;
+        var summary = dayPrefix + timeStr + " " + title;
+        if (calName) summary += " \u00b7 " + calName;
+        return summary;
     }
 
     function eventDayPrefix(ev) {

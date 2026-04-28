@@ -15,7 +15,7 @@ DESCRIPTION:Weekly sync
 END:VEVENT
 END:VCALENDAR`
 
-	ev := ParseVEvent(ics, "/cal/test-123.ics", 0)
+	ev := ParseVEvent(ics, "/cal/test-123.ics", 0, "Europe/Lisbon")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
@@ -52,7 +52,7 @@ DTEND;VALUE=DATE:20260502
 END:VEVENT
 END:VCALENDAR`
 
-	ev := ParseVEvent(ics, "/cal/allday-1.ics", 1)
+	ev := ParseVEvent(ics, "/cal/allday-1.ics", 1, "Europe/Lisbon")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
@@ -73,7 +73,7 @@ END:VCALENDAR`
 func TestParseVEvent_FoldedLines(t *testing.T) {
 	ics := "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:fold-1\r\nSUMMARY:Very long\r\n  event title here\r\nDTSTART;VALUE=DATE:20260601\r\nEND:VEVENT\r\nEND:VCALENDAR"
 
-	ev := ParseVEvent(ics, "", 0)
+	ev := ParseVEvent(ics, "", 0, "")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
@@ -92,7 +92,7 @@ DTSTART;VALUE=DATE:20260601
 END:VEVENT
 END:VCALENDAR`
 
-	ev := ParseVEvent(ics, "", 0)
+	ev := ParseVEvent(ics, "", 0, "")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
@@ -114,12 +114,13 @@ DTEND:20260424T150000Z
 END:VEVENT
 END:VCALENDAR`
 
-	ev := ParseVEvent(ics, "", 0)
+	// Target is Lisbon (UTC+1 in summer / WEST), so 14:00Z → 15:00
+	ev := ParseVEvent(ics, "", 0, "Europe/Lisbon")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
-	if ev.Start != "2026-04-24T14:00:00" {
-		t.Errorf("Start = %q, want %q", ev.Start, "2026-04-24T14:00:00")
+	if ev.Start != "2026-04-24T15:00:00" {
+		t.Errorf("Start = %q, want %q", ev.Start, "2026-04-24T15:00:00")
 	}
 	if ev.AllDay {
 		t.Error("AllDay should be false for UTC datetime")
@@ -135,11 +136,42 @@ DTSTART;VALUE=DATE:20260701
 END:VEVENT
 END:VCALENDAR`
 
-	ev := ParseVEvent(ics, "", 0)
+	ev := ParseVEvent(ics, "", 0, "")
 	if ev == nil {
 		t.Fatal("expected event, got nil")
 	}
 	if ev.End != "2026-07-02" {
 		t.Errorf("End = %q, want %q (default next day)", ev.End, "2026-07-02")
+	}
+}
+
+func TestParseVEvent_UTCToLocalConversion(t *testing.T) {
+	// A UTC event and a TZID event that represent the same moment
+	// should produce identical local times when parsed to the same target.
+	icsUTC := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:cross-1
+SUMMARY:UTC Call
+DTSTART:20260428T090000Z
+END:VEVENT
+END:VCALENDAR`
+
+	icsLisbon := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:cross-2
+SUMMARY:Lisbon Call
+DTSTART;TZID=Europe/Lisbon:20260428T100000
+END:VEVENT
+END:VCALENDAR`
+
+	evUTC := ParseVEvent(icsUTC, "", 0, "Europe/Lisbon")
+	evLisbon := ParseVEvent(icsLisbon, "", 1, "Europe/Lisbon")
+
+	if evUTC == nil || evLisbon == nil {
+		t.Fatal("expected both events, got nil")
+	}
+	if evUTC.Start != evLisbon.Start {
+		t.Errorf("UTC start %q != Lisbon start %q — should be equal after normalisation",
+			evUTC.Start, evLisbon.Start)
 	}
 }

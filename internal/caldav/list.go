@@ -9,11 +9,15 @@ import (
 // ListEvents fetches events from a calendar URL within the given time range.
 // Returns raw ICS strings for each event found.
 func (c *Client) ListEvents(calURL string, start, end time.Time) ([]EventResult, error) {
+	startFmt := start.UTC().Format("20060102T150405Z")
+	endFmt := end.UTC().Format("20060102T150405Z")
 	body := fmt.Sprintf(`<?xml version="1.0"?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
   <d:prop>
     <d:getetag/>
-    <c:calendar-data/>
+    <c:calendar-data>
+      <c:expand start="%s" end="%s"/>
+    </c:calendar-data>
   </d:prop>
   <c:filter>
     <c:comp-filter name="VCALENDAR">
@@ -22,7 +26,7 @@ func (c *Client) ListEvents(calURL string, start, end time.Time) ([]EventResult,
       </c:comp-filter>
     </c:comp-filter>
   </c:filter>
-</c:calendar-query>`, start.UTC().Format("20060102T150405Z"), end.UTC().Format("20060102T150405Z"))
+</c:calendar-query>`, startFmt, endFmt, startFmt, endFmt)
 
 	data, err := c.Report(calURL, body)
 	if err != nil {

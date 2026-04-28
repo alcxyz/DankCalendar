@@ -67,6 +67,8 @@ go build -o dankcalendar ./cmd/dankcalendar
 - **Keyring-only** — passwords stored via `secret-tool`, never in config files
 - **Security by default** — HTTPS-only, ICS escaping, path traversal protection, `0600` config
 - **JSON output** — one JSON object per command on stdout, errors on stderr
+- **Timezone-aware** — events from all calendars normalised to the configured timezone for correct cross-calendar sorting
+- **Recurring events** — server-side expansion via CalDAV `<expand>` with client-side RRULE fallback for subscribed calendars
 
 See [docs/adr/](docs/adr/) for architectural decision records.
 

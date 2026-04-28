@@ -59,7 +59,7 @@ PluginSettings {
         description: "How many days into the future to show events"
         minimum: 1
         maximum: 30
-        defaultValue: 7
+        defaultValue: 14
     }
 
     SliderSetting {
@@ -82,7 +82,7 @@ PluginSettings {
         settingKey: "showCalendarName"
         label: "Show calendar name"
         description: "Display which calendar each event belongs to"
-        defaultValue: false
+        defaultValue: true
     }
 
     ToggleSetting {
