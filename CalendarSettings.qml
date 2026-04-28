@@ -33,7 +33,6 @@ PluginSettings {
         label: "Password"
         description: "App-specific password for your CalDAV account. Stored securely in the system keyring via secret-tool."
         placeholder: "Enter password..."
-        password: true
     }
 
     StyledText {
