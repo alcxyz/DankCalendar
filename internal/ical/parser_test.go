@@ -175,3 +175,52 @@ END:VCALENDAR`
 			evUTC.Start, evLisbon.Start)
 	}
 }
+
+func TestParseVEvent_MeetLinkAndAttendees(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:meet-1
+SUMMARY:Team Standup
+DTSTART;TZID=Europe/Oslo:20260428T100000
+DTEND;TZID=Europe/Oslo:20260428T103000
+X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg-hij
+ATTENDEE;PARTSTAT=ACCEPTED;CN=Alice:mailto:alice@example.com
+ATTENDEE;PARTSTAT=DECLINED;CN=Bob:mailto:bob@example.com
+ATTENDEE;PARTSTAT=ACCEPTED;CN=Carol:mailto:carol@example.com
+ATTENDEE;PARTSTAT=TENTATIVE;CN=Dave:mailto:dave@example.com
+END:VEVENT
+END:VCALENDAR`
+
+	ev := ParseVEvent(ics, "", 0, "Europe/Oslo")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	if ev.MeetLink != "https://meet.google.com/abc-defg-hij" {
+		t.Errorf("MeetLink = %q, want Google Meet URL", ev.MeetLink)
+	}
+	if ev.RsvpTotal != 4 {
+		t.Errorf("RsvpTotal = %d, want 4", ev.RsvpTotal)
+	}
+	if ev.RsvpAccepted != 2 {
+		t.Errorf("RsvpAccepted = %d, want 2", ev.RsvpAccepted)
+	}
+}
+
+func TestParseVEvent_ConferenceProperty(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:conf-1
+SUMMARY:Video Call
+DTSTART;VALUE=DATE:20260501
+CONFERENCE:https://zoom.us/j/123456789
+END:VEVENT
+END:VCALENDAR`
+
+	ev := ParseVEvent(ics, "", 0, "")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	if ev.MeetLink != "https://zoom.us/j/123456789" {
+		t.Errorf("MeetLink = %q, want Zoom URL", ev.MeetLink)
+	}
+}

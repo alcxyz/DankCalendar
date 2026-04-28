@@ -7,16 +7,19 @@ import (
 )
 
 type Event struct {
-	UID         string `json:"uid"`
-	Summary     string `json:"title"`
-	Start       string `json:"start"`
-	End         string `json:"end"`
-	AllDay      bool   `json:"allDay"`
-	Location    string `json:"location"`
-	Description string `json:"description"`
-	Filename    string `json:"filename"`
-	CalendarIdx int    `json:"calendarIndex"`
-	RRule       string `json:"-"` // raw RRULE value, not serialised to JSON
+	UID          string `json:"uid"`
+	Summary      string `json:"title"`
+	Start        string `json:"start"`
+	End          string `json:"end"`
+	AllDay       bool   `json:"allDay"`
+	Location     string `json:"location"`
+	Description  string `json:"description"`
+	Filename     string `json:"filename"`
+	CalendarIdx  int    `json:"calendarIndex"`
+	MeetLink     string `json:"meetLink,omitempty"`
+	RsvpAccepted int    `json:"rsvpAccepted"`
+	RsvpTotal    int    `json:"rsvpTotal"`
+	RRule        string `json:"-"`
 }
 
 // ParseVEvent extracts a single VEVENT from ICS data.
@@ -58,6 +61,20 @@ func ParseVEvent(icsData, href string, calIdx int, targetTZ string) *Event {
 			ev.End, _ = parseDateTime(value, params, loc)
 		case "RRULE":
 			ev.RRule = value
+		case "X-GOOGLE-CONFERENCE":
+			if ev.MeetLink == "" {
+				ev.MeetLink = value
+			}
+		case "CONFERENCE":
+			if ev.MeetLink == "" {
+				ev.MeetLink = value
+			}
+		case "ATTENDEE":
+			ev.RsvpTotal++
+			upper := strings.ToUpper(params)
+			if strings.Contains(upper, "PARTSTAT=ACCEPTED") {
+				ev.RsvpAccepted++
+			}
 		}
 	}
 

@@ -86,6 +86,20 @@ PluginSettings {
     }
 
     ToggleSetting {
+        settingKey: "showMeetLink"
+        label: "Show Meet link"
+        description: "Display a clickable Meet link for Google Calendar events"
+        defaultValue: true
+    }
+
+    ToggleSetting {
+        settingKey: "showRsvp"
+        label: "Show RSVP count"
+        description: "Display accepted/total attendee count for events"
+        defaultValue: true
+    }
+
+    ToggleSetting {
         settingKey: "notificationsEnabled"
         label: "Desktop notifications"
         description: "Send a notification before upcoming events"

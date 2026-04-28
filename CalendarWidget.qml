@@ -14,6 +14,8 @@ PluginComponent {
     property int refreshInterval: 5       // minutes
     property bool showLocation: true
     property bool showCalendarName: true
+    property bool showMeetLink: true
+    property bool showRsvp: true
     property bool notificationsEnabled: true
     property int notifyMinutes: 15        // notify N minutes before event
     property string caldavUrl: ""
@@ -70,6 +72,8 @@ PluginComponent {
         refreshInterval = pluginService.loadPluginData(pluginId, "refreshInterval", 5) || 5;
         showLocation = pluginService.loadPluginData(pluginId, "showLocation", true) !== false;
         showCalendarName = pluginService.loadPluginData(pluginId, "showCalendarName", true) !== false;
+        showMeetLink = pluginService.loadPluginData(pluginId, "showMeetLink", true) !== false;
+        showRsvp = pluginService.loadPluginData(pluginId, "showRsvp", true) !== false;
         notificationsEnabled = pluginService.loadPluginData(pluginId, "notificationsEnabled", true) !== false;
         notifyMinutes = pluginService.loadPluginData(pluginId, "notifyMinutes", 15) || 15;
         caldavUrl = pluginService.loadPluginData(pluginId, "caldavUrl", "") || "";
@@ -554,7 +558,21 @@ PluginComponent {
 
     // ── Popout panel ────────────────────────────────────────────────
     popoutContent: Component {
+        Item {
+            implicitWidth: root.popoutWidth
+            implicitHeight: root.popoutHeight
+
+        Flickable {
+            anchors.fill: parent
+            contentWidth: parent.width
+            contentHeight: contentColumn.height
+            clip: true
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
+
         Column {
+            id: contentColumn
+            width: parent.width
             spacing: Theme.spacingL
             Component.onCompleted: { root.showAddForm = false; root.showEditForm = false; }
 
@@ -1668,6 +1686,29 @@ PluginComponent {
                                         elide: Text.ElideRight
                                     }
 
+                                    Row {
+                                        id: meetLinkRow
+                                        spacing: Theme.spacingXS
+                                        visible: root.showMeetLink && (modelData.meetLink || "") !== ""
+                                        width: parent.width
+
+                                        StyledText {
+                                            text: "Join Meet"
+                                            color: Theme.primary
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            font.weight: Font.Medium
+                                        }
+                                    }
+
+                                    StyledText {
+                                        text: (modelData.rsvpAccepted || 0) + "/" + (modelData.rsvpTotal || 0) + " accepted"
+                                        color: Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        visible: root.showRsvp && (modelData.rsvpTotal || 0) > 0
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                    }
+
                                     StyledText {
                                         text: root.calendarNameForIndex(modelData.calendarIndex)
                                         color: Theme.surfaceVariantText
@@ -1687,11 +1728,23 @@ PluginComponent {
                                         if (modelData.filename) root.openEditForm(modelData);
                                     }
                                 }
+
+                                MouseArea {
+                                    x: meetLinkRow.parent.x + meetLinkRow.x
+                                    y: meetLinkRow.parent.y + meetLinkRow.y
+                                    width: meetLinkRow.width
+                                    height: meetLinkRow.height
+                                    visible: meetLinkRow.visible
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: Qt.openUrlExternally(modelData.meetLink)
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+        }
         }
     }
 
