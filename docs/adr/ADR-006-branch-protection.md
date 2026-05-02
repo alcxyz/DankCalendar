@@ -6,16 +6,16 @@
 
 ## Context
 
-The other DankMaterialShell plugins (DankQuickSearch, DankVault) use `main` + `dev` branches but without branch protection. Direct pushes to main risk breaking the release pipeline, which auto-tags and creates GitHub releases from the VERSION file on every main push.
+The DankMaterialShell plugin repositories use `main` for releases and `dev` for active development. Direct pushes to `main` risk bypassing the release review path and can trigger unintended release automation.
 
 ## Decision
 
 Protect the `main` branch with:
-- Required status checks (CI "Test" job must pass, branch must be up to date)
-- Required pull request (no direct pushes, 0 approvals needed since this is a solo project)
+- Pull requests for changes to `main`
+- No required approvals by default, since these are solo-maintained repositories
 - No force pushes or deletions
 
-All development happens on `dev`. Merges to `main` go through PRs, which triggers a release when VERSION is bumped.
+All development happens on `dev`. Releases go through a PR from a release branch into `main`. Version bumps happen on the release branch unless the release is documentation-only. Release automation reads `plugin.json.version`.
 
 ## Alternatives Considered
 
@@ -24,6 +24,6 @@ All development happens on `dev`. Merges to `main` go through PRs, which trigger
 
 ## Consequences
 
-- Every merge to main goes through CI before landing.
-- Releases are deliberate — bump VERSION on dev, PR to main, CI passes, auto-release.
+- Every merge to main goes through a PR before landing.
+- Releases are deliberate: develop on `dev`, create a release branch, bump `plugin.json.version` for non-doc releases, then PR to `main`.
 - Slightly more friction for small changes, but prevents broken releases.

@@ -30,7 +30,7 @@ inputs.dms-plugin-calendar = {
 ```
 
 ```nix
-programs.dank-material-shell.plugins.DankCalendar = {
+programs.dank-material-shell.plugins.dankCalendar = {
   enable = true;
   src = inputs.dms-plugin-calendar;
 };
