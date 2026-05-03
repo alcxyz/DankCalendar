@@ -23,10 +23,7 @@ jobs:
           go-version: "1.22"
 
       - name: Build binary
-        run: go build -ldflags "-X main.version=$(cat VERSION)" -o dankcalendar ./cmd/dankcalendar
-
-      - name: Check VERSION exists
-        run: test -f VERSION
+        run: go build -ldflags "-X main.version=$(jq -r .version plugin.json)" -o dankcalendar ./cmd/dankcalendar
 
       - name: Go unit tests
         run: go test ./...
@@ -47,8 +44,8 @@ jobs:
       - name: Auto-tag release
         id: tag
         run: |
-          VERSION="v$(cat VERSION)"
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          VERSION="v$(jq -r .version plugin.json)"
+          if git tag -l "$VERSION" | grep -q . || git ls-remote --tags origin "$VERSION" | grep -q .; then
             echo "Tag $VERSION already exists, skipping."
             echo "created=false" >> "$GITHUB_OUTPUT"
           else
@@ -62,4 +59,4 @@ jobs:
         if: steps.tag.outputs.created == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "v$(cat VERSION)" --generate-notes
+        run: gh release create "v$(jq -r .version plugin.json)" --generate-notes

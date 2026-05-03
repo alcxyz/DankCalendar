@@ -28,7 +28,7 @@ assert_contains() {
 # ── VERSION format ──────────────────────────────────────────────────
 
 echo "VERSION"
-VERSION=$(cat VERSION | tr -d '[:space:]')
+VERSION=$(jq -r .version plugin.json)
 if echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
     pass "semver format ($VERSION)"
 else
@@ -62,7 +62,7 @@ assert_contains "help shows setup command" "setup" "$HELP"
 assert_contains "help shows discover command" "discover" "$HELP"
 
 VERSION_OUT=$(./dankcalendar --version 2>&1)
-assert_eq "version output matches VERSION file" "$VERSION" "$VERSION_OUT"
+assert_eq "version output matches plugin.json" "$VERSION" "$VERSION_OUT"
 
 # ── JSON error output ───────────────────────────────────────────────
 
@@ -90,7 +90,7 @@ for dir in cmd/dankcalendar internal/caldav internal/ical internal/keyring inter
     fi
 done
 
-for file in VERSION LICENSE .gitignore go.mod docs/adr/README.md; do
+for file in LICENSE .gitignore go.mod docs/adr/README.md plugin.json; do
     if [ -f "$file" ]; then
         pass "file exists: $file"
     else
