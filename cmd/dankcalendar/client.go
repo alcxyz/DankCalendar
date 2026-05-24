@@ -11,10 +11,16 @@ import (
 	"github.com/alcxyz/DankCalendar/internal/keyring"
 )
 
+var lookupBasicPassword = keyring.Lookup
+
+var lookupGoogleAccessToken = func(ctx context.Context, account, clientID string) (string, error) {
+	return google.NewClient(account, clientID).AccessToken(ctx)
+}
+
 func newCalendarClient(ctx context.Context, cfg *config.Config, cal config.Calendar) (*caldav.Client, error) {
 	switch cal.Auth {
 	case "", "basic":
-		pw, err := keyring.Lookup(cal.Username)
+		pw, err := lookupBasicPassword(cal.Username)
 		if err != nil {
 			return nil, err
 		}
@@ -28,8 +34,7 @@ func newCalendarClient(ctx context.Context, cfg *config.Config, cal config.Calen
 		if !ok || gacct.ClientID == "" {
 			return nil, fmt.Errorf("missing Google OAuth client ID for account %q", account)
 		}
-		gclient := google.NewClient(account, gacct.ClientID)
-		token, err := gclient.AccessToken(ctx)
+		token, err := lookupGoogleAccessToken(ctx, account, gacct.ClientID)
 		if err != nil {
 			return nil, err
 		}

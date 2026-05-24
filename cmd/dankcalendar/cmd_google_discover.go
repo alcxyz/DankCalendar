@@ -63,11 +63,27 @@ func cmdGoogleDiscover(args []string) {
 		return
 	}
 
-	cfg.GoogleAccounts[*account] = config.GoogleAccount{ClientID: *clientID}
+	names := applyGoogleDiscovery(cfg, *account, *clientID, discovered)
+
+	if err := config.Save(cfg); err != nil {
+		exitError("save config: " + err.Error())
+	}
+
+	output.JSON(map[string]any{
+		"success":   true,
+		"calendars": names,
+	})
+}
+
+func applyGoogleDiscovery(cfg *config.Config, account, clientID string, discovered []google.Calendar) []string {
+	if cfg.GoogleAccounts == nil {
+		cfg.GoogleAccounts = make(map[string]config.GoogleAccount)
+	}
+	cfg.GoogleAccounts[account] = config.GoogleAccount{ClientID: clientID}
 
 	var kept []config.Calendar
 	for _, cal := range cfg.Calendars {
-		if cal.Auth == "google-oauth" && cal.Account == *account {
+		if cal.Auth == "google-oauth" && cal.Account == account {
 			continue
 		}
 		kept = append(kept, cal)
@@ -75,20 +91,16 @@ func cmdGoogleDiscover(args []string) {
 	for _, cal := range discovered {
 		kept = append(kept, config.Calendar{
 			URL:        google.CalDAVEventsURL(cal.ID),
-			Username:   *account,
+			Username:   account,
 			Name:       cal.Name,
 			Auth:       "google-oauth",
 			Provider:   "google",
-			Account:    *account,
+			Account:    account,
 			CalendarID: cal.ID,
 			ReadOnly:   cal.ReadOnly,
 		})
 	}
 	cfg.Calendars = kept
-
-	if err := config.Save(cfg); err != nil {
-		exitError("save config: " + err.Error())
-	}
 
 	names := make([]string, len(discovered))
 	for i, cal := range discovered {
@@ -97,8 +109,5 @@ func cmdGoogleDiscover(args []string) {
 			names[i] = fmt.Sprintf("%s (read-only)", cal.Name)
 		}
 	}
-	output.JSON(map[string]any{
-		"success":   true,
-		"calendars": names,
-	})
+	return names
 }

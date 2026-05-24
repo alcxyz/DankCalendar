@@ -42,6 +42,10 @@ func NewClientWithAuth(rawURL, username, password string, authProvider auth.Prov
 	}, nil
 }
 
+func (c *Client) SetHTTPClient(httpClient *http.Client) {
+	c.http = httpClient
+}
+
 func (c *Client) do(method, rawURL, body string, headers map[string]string) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != "" {
