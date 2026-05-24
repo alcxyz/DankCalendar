@@ -1,15 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/url"
 	"strings"
 
-	"github.com/alcxyz/DankCalendar/internal/caldav"
 	"github.com/alcxyz/DankCalendar/internal/config"
 	"github.com/alcxyz/DankCalendar/internal/ical"
-	"github.com/alcxyz/DankCalendar/internal/keyring"
 	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
@@ -42,12 +41,12 @@ func cmdEdit(args []string) {
 	}
 
 	cal := cfg.Calendars[*calIdx]
-	pw, err := keyring.Lookup(cal.Username)
-	if err != nil {
-		exitError(err.Error())
+	if cal.ReadOnly {
+		output.JSON(map[string]any{"success": false, "error": "this calendar is read-only"})
+		return
 	}
 
-	client, err := caldav.NewClient(cal.URL, cal.Username, pw)
+	client, err := newCalendarClient(context.Background(), cfg, cal)
 	if err != nil {
 		exitError(err.Error())
 	}

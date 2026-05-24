@@ -60,6 +60,7 @@ assert_contains "help shows delete command" "delete" "$HELP"
 assert_contains "help shows notify command" "notify" "$HELP"
 assert_contains "help shows setup command" "setup" "$HELP"
 assert_contains "help shows discover command" "discover" "$HELP"
+assert_contains "help shows google-discover command" "google-discover" "$HELP"
 
 VERSION_OUT=$(./dankcalendar --version 2>&1)
 assert_eq "version output matches plugin.json" "$VERSION" "$VERSION_OUT"
@@ -67,7 +68,9 @@ assert_eq "version output matches plugin.json" "$VERSION" "$VERSION_OUT"
 # ── JSON error output ───────────────────────────────────────────────
 
 echo "JSON output"
-ERROR_OUT=$(./dankcalendar list 2>/dev/null || true)
+TMP_CONFIG=$(mktemp -d)
+ERROR_OUT=$(XDG_CONFIG_HOME="$TMP_CONFIG" ./dankcalendar list 2>/dev/null || true)
+rm -rf "$TMP_CONFIG"
 assert_contains "error output is JSON" '"error"' "$ERROR_OUT"
 
 # ── stdlib-only (no go.sum) ─────────────────────────────────────────
@@ -82,7 +85,7 @@ fi
 # ── project structure ───────────────────────────────────────────────
 
 echo "project structure"
-for dir in cmd/dankcalendar internal/caldav internal/ical internal/keyring internal/config internal/output docs/adr; do
+for dir in cmd/dankcalendar internal/auth internal/caldav internal/google internal/ical internal/keyring internal/config internal/output docs/adr; do
     if [ -d "$dir" ]; then
         pass "directory exists: $dir"
     else

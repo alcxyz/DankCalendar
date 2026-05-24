@@ -1,22 +1,31 @@
 package caldav
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/alcxyz/DankCalendar/internal/auth"
 )
 
 type Client struct {
 	BaseURL  *url.URL
 	Username string
 	Password string
+	auth     auth.Provider
 	http     *http.Client
 }
 
 func NewClient(rawURL, username, password string) (*Client, error) {
+	return NewClientWithAuth(rawURL, username, password, auth.Basic{
+		Username: username,
+		Password: password,
+	})
+}
+
+func NewClientWithAuth(rawURL, username, password string, authProvider auth.Provider) (*Client, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid URL: %w", err)
@@ -28,6 +37,7 @@ func NewClient(rawURL, username, password string) (*Client, error) {
 		BaseURL:  u,
 		Username: username,
 		Password: password,
+		auth:     authProvider,
 		http:     &http.Client{},
 	}, nil
 }
@@ -41,8 +51,11 @@ func (c *Client) do(method, rawURL, body string, headers map[string]string) (*ht
 	if err != nil {
 		return nil, err
 	}
-	cred := base64.StdEncoding.EncodeToString([]byte(c.Username + ":" + c.Password))
-	req.Header.Set("Authorization", "Basic "+cred)
+	if c.auth != nil {
+		if err := c.auth.Authorize(req); err != nil {
+			return nil, err
+		}
+	}
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}

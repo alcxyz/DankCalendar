@@ -15,6 +15,7 @@ CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/Da
 | `dankcalendar delete` | Delete an event |
 | `dankcalendar notify` | Send desktop notifications for upcoming events |
 | `dankcalendar setup` | Configure CalDAV credentials |
+| `dankcalendar google-discover` | Authorize and discover Google calendars |
 
 ## Installation
 
@@ -54,6 +55,21 @@ programs.dank-material-shell.plugins.dankCalendar = {
    dankcalendar setup
    ```
 
+### Google Workspace / OAuth
+
+Google Workspace requires OAuth 2.0 for CalDAV. Basic auth and app-specific passwords return `401 Unauthorized` on Google's current CalDAV endpoint.
+
+To add Google calendars:
+
+1. Create a Google OAuth desktop client ID in Google Cloud Console and enable the Google Calendar API.
+2. Run:
+   ```sh
+   dankcalendar google-discover --account you@example.com --client-id YOUR_CLIENT_ID.apps.googleusercontent.com
+   ```
+3. Complete the browser authorization flow. DankCalendar stores the refresh token in the system keyring and writes discovered calendars to the normal config file.
+
+Discovered Google calendars use Google's CalDAV endpoint with OAuth bearer-token authentication. Event listing, creation, editing, and deletion still use DankCalendar's CalDAV backend.
+
 ## Build
 
 ```sh
@@ -65,6 +81,7 @@ go build -o dankcalendar ./cmd/dankcalendar
 - **Single binary** — no Python, no submodules
 - **Stdlib-only** — no external Go dependencies
 - **Keyring-only** — passwords stored via `secret-tool`, never in config files
+- **Google Workspace support** — OAuth setup with Google Calendar discovery and CalDAV event operations
 - **Security by default** — HTTPS-only, ICS escaping, path traversal protection, `0600` config
 - **JSON output** — one JSON object per command on stdout, errors on stderr
 - **Timezone-aware** — events from all calendars normalised to the configured timezone for correct cross-calendar sorting
