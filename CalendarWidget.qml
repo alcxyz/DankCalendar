@@ -14,6 +14,7 @@ PluginComponent {
     property int refreshInterval: 5       // minutes
     property bool showLocation: true
     property bool showCalendarName: true
+    property bool hidePastEvents: false
     property bool showMeetLink: true
     property bool showRsvp: true
     property bool notificationsEnabled: true
@@ -30,6 +31,7 @@ PluginComponent {
     property bool hasError: false
     property string errorText: ""
     property string lastUpdated: ""
+    property int currentMinuteTick: 0
     property var calendars: []            // [{index, name, url, readOnly}]
     property bool showAddForm: false
     property string addError: ""
@@ -72,6 +74,7 @@ PluginComponent {
         refreshInterval = pluginService.loadPluginData(pluginId, "refreshInterval", 5) || 5;
         showLocation = pluginService.loadPluginData(pluginId, "showLocation", true) !== false;
         showCalendarName = pluginService.loadPluginData(pluginId, "showCalendarName", true) !== false;
+        hidePastEvents = pluginService.loadPluginData(pluginId, "hidePastEvents", false) === true;
         showMeetLink = pluginService.loadPluginData(pluginId, "showMeetLink", true) !== false;
         showRsvp = pluginService.loadPluginData(pluginId, "showRsvp", true) !== false;
         notificationsEnabled = pluginService.loadPluginData(pluginId, "notificationsEnabled", true) !== false;
@@ -152,6 +155,14 @@ PluginComponent {
         running: root.notificationsEnabled
         repeat: true
         onTriggered: root.checkNotifications()
+    }
+
+    Timer {
+        id: minuteTimer
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: root.currentMinuteTick++
     }
 
     // ── Fetch events ────────────────────────────────────────────────
@@ -418,8 +429,9 @@ PluginComponent {
     function nextEventSummary() {
         if (isLoading) return "Cal ...";
         if (hasError) return "Cal \u2013";
-        if (events.length === 0) return "No events";
-        var ev = events[0];
+        var visible = visibleEvents();
+        if (visible.length === 0) return "No events";
+        var ev = visible[0];
         var timeStr = formatEventTime(ev);
         var dayPrefix = eventDayPrefix(ev);
         var calName = calendarNameForIndex(ev.calendarIndex);
@@ -488,18 +500,46 @@ PluginComponent {
         return ev.start.split("T")[0];
     }
 
+    function parseEventStart(ev) {
+        if (!ev || ev.allDay || !ev.start || ev.start.indexOf("T") === -1) return null;
+        var parts = ev.start.split("T");
+        var d = parts[0].split("-");
+        var t = parts[1].split(":");
+        if (d.length < 3 || t.length < 2) return null;
+        return new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(t[1]), 0, 0);
+    }
+
+    function isPastEvent(ev) {
+        currentMinuteTick;
+        if (!hidePastEvents) return false;
+        var start = parseEventStart(ev);
+        if (start === null) return false;
+        return start.getTime() <= new Date().getTime();
+    }
+
+    function visibleEvents() {
+        currentMinuteTick;
+        if (!hidePastEvents) return events;
+        var filtered = [];
+        for (var i = 0; i < events.length; i++) {
+            if (!isPastEvent(events[i])) filtered.push(events[i]);
+        }
+        return filtered;
+    }
+
     function groupedEvents() {
         var groups = [];
         var currentDate = "";
         var currentGroup = null;
-        for (var i = 0; i < events.length; i++) {
-            var dk = eventDateKey(events[i]);
+        var visible = visibleEvents();
+        for (var i = 0; i < visible.length; i++) {
+            var dk = eventDateKey(visible[i]);
             if (dk !== currentDate) {
                 currentDate = dk;
-                currentGroup = { date: events[i].start, events: [] };
+                currentGroup = { date: visible[i].start, events: [] };
                 groups.push(currentGroup);
             }
-            currentGroup.events.push(events[i]);
+            currentGroup.events.push(visible[i]);
         }
         return groups;
     }
@@ -507,7 +547,7 @@ PluginComponent {
     function pillCountText() {
         if (isLoading) return "...";
         if (hasError) return "\u2013";
-        return "" + eventCount;
+        return "" + visibleEvents().length;
     }
 
     function calendarNameForIndex(idx) {
@@ -655,7 +695,7 @@ PluginComponent {
                 text: "No upcoming events in the next " + root.lookAheadDays + " days."
                 color: Theme.surfaceVariantText
                 font.pixelSize: Theme.fontSizeMedium
-                visible: !root.isLoading && !root.hasError && root.events.length === 0 && !root.showAddForm
+                visible: !root.isLoading && !root.hasError && root.visibleEvents().length === 0 && !root.showAddForm
             }
 
             // ── Add event form ──────────────────────────────────────
@@ -1621,7 +1661,7 @@ PluginComponent {
             Column {
                 width: parent.width
                 spacing: Theme.spacingM
-                visible: !root.isLoading && !root.hasError && root.events.length > 0 && !root.showEditForm
+                visible: !root.isLoading && !root.hasError && root.visibleEvents().length > 0 && !root.showEditForm
 
                 Repeater {
                     model: root.groupedEvents()

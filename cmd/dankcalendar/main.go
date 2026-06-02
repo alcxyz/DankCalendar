@@ -10,14 +10,15 @@ import (
 var version = "dev"
 
 var commands = map[string]string{
-	"list":      "List upcoming events",
-	"calendars": "Discover available calendars",
-	"add":       "Create a new event",
-	"edit":      "Modify an existing event",
-	"delete":    "Delete an event",
-	"notify":    "Send desktop notifications for upcoming events",
-	"setup":     "Configure CalDAV credentials (interactive)",
-	"discover":  "Discover calendars and store credentials (non-interactive)",
+	"list":            "List upcoming events",
+	"calendars":       "Discover available calendars",
+	"add":             "Create a new event",
+	"edit":            "Modify an existing event",
+	"delete":          "Delete an event",
+	"notify":          "Send desktop notifications for upcoming events",
+	"setup":           "Configure CalDAV credentials (interactive)",
+	"discover":        "Discover calendars and store credentials (non-interactive)",
+	"google-discover": "Authorize and discover Google calendars",
 }
 
 func main() {
@@ -50,6 +51,8 @@ func main() {
 		cmdSetup(args)
 	case "discover":
 		cmdDiscover(args)
+	case "google-discover":
+		cmdGoogleDiscover(args)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		usage()

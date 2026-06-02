@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/alcxyz/DankCalendar/internal/caldav"
+	"context"
+
 	"github.com/alcxyz/DankCalendar/internal/config"
-	"github.com/alcxyz/DankCalendar/internal/keyring"
 	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
@@ -23,12 +23,17 @@ func cmdCalendars(args []string) {
 	var cals []calendarInfo
 
 	for i, cal := range cfg.Calendars {
-		pw, err := keyring.Lookup(cal.Username)
-		if err != nil {
-			exitError(err.Error())
+		if cal.Auth == "google-oauth" && cal.Name != "" {
+			cals = append(cals, calendarInfo{
+				Index:    i,
+				Name:     cal.Name,
+				URL:      cal.URL,
+				ReadOnly: cal.ReadOnly,
+			})
+			continue
 		}
 
-		client, err := caldav.NewClient(cal.URL, cal.Username, pw)
+		client, err := newCalendarClient(context.Background(), cfg, cal)
 		if err != nil {
 			exitError(err.Error())
 		}

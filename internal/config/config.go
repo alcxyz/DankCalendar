@@ -8,13 +8,24 @@ import (
 )
 
 type Calendar struct {
-	URL      string `json:"url"`
-	Username string `json:"username"`
+	URL        string `json:"url"`
+	Username   string `json:"username"`
+	Name       string `json:"name,omitempty"`
+	Auth       string `json:"auth,omitempty"`
+	Provider   string `json:"provider,omitempty"`
+	Account    string `json:"account,omitempty"`
+	CalendarID string `json:"calendarId,omitempty"`
+	ReadOnly   bool   `json:"readOnly,omitempty"`
+}
+
+type GoogleAccount struct {
+	ClientID string `json:"clientId"`
 }
 
 type Config struct {
-	Timezone string     `json:"timezone"`
-	Calendars []Calendar `json:"calendars"`
+	Timezone       string                   `json:"timezone"`
+	Calendars      []Calendar               `json:"calendars"`
+	GoogleAccounts map[string]GoogleAccount `json:"googleAccounts,omitempty"`
 }
 
 func Dir() string {

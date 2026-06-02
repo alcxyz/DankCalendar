@@ -11,3 +11,4 @@
 | [ADR-007](ADR-007-standalone-dms-plugin.md) | DankCalendar bundles its own DMS plugin layer | architecture |
 | [ADR-008](ADR-008-timezone-normalization-and-recurrence-expansion.md) | Timezone normalization and server-side recurrence expansion | data |
 | [ADR-009](ADR-009-no-unsupported-qml-properties-in-settings.md) | No unsupported QML properties in settings components | integration |
+| [ADR-010](ADR-010-provider-auth-and-google-calendar-discovery.md) | Provider auth and Google Calendar discovery | architecture |

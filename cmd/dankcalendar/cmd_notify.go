@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"os"
@@ -9,10 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alcxyz/DankCalendar/internal/caldav"
 	"github.com/alcxyz/DankCalendar/internal/config"
 	"github.com/alcxyz/DankCalendar/internal/ical"
-	"github.com/alcxyz/DankCalendar/internal/keyring"
 	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
@@ -31,11 +30,7 @@ func cmdNotify(args []string) {
 
 	var allEvents []ical.Event
 	for i, cal := range cfg.Calendars {
-		pw, err := keyring.Lookup(cal.Username)
-		if err != nil {
-			continue
-		}
-		client, err := caldav.NewClient(cal.URL, cal.Username, pw)
+		client, err := newCalendarClient(context.Background(), cfg, cal)
 		if err != nil {
 			continue
 		}
@@ -132,4 +127,3 @@ func saveNotified(m map[string]string) {
 	data, _ := json.Marshal(m)
 	os.WriteFile(p, data, 0600)
 }
-

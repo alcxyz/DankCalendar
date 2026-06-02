@@ -1,14 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"sort"
 	"time"
 
-	"github.com/alcxyz/DankCalendar/internal/caldav"
 	"github.com/alcxyz/DankCalendar/internal/config"
 	"github.com/alcxyz/DankCalendar/internal/ical"
-	"github.com/alcxyz/DankCalendar/internal/keyring"
 	"github.com/alcxyz/DankCalendar/internal/output"
 )
 
@@ -31,12 +30,7 @@ func cmdList(args []string) {
 	var allEvents []ical.Event
 
 	for i, cal := range cfg.Calendars {
-		pw, err := keyring.Lookup(cal.Username)
-		if err != nil {
-			exitError(err.Error())
-		}
-
-		client, err := caldav.NewClient(cal.URL, cal.Username, pw)
+		client, err := newCalendarClient(context.Background(), cfg, cal)
 		if err != nil {
 			exitError(err.Error())
 		}

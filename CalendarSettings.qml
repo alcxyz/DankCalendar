@@ -85,6 +85,13 @@ PluginSettings {
     }
 
     ToggleSetting {
+        settingKey: "hidePastEvents"
+        label: "Hide past events"
+        description: "Hide timed events after their start time has passed"
+        defaultValue: false
+    }
+
+    ToggleSetting {
         settingKey: "showMeetLink"
         label: "Show Meet link"
         description: "Display a clickable Meet link for Google Calendar events"
