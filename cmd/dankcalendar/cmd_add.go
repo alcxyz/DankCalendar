@@ -18,6 +18,7 @@ func cmdAdd(args []string) {
 	calIdx := fs.Int("calendar", 0, "calendar index")
 	summary := fs.String("summary", "", "event title")
 	location := fs.String("location", "", "event location")
+	description := fs.String("description", "", "event description")
 	startStr := fs.String("start", "", "start time (YYYY-MM-DDTHH:MM or YYYY-MM-DD for all-day)")
 	endStr := fs.String("end", "", "end time (YYYY-MM-DDTHH:MM or YYYY-MM-DD for all-day)")
 	allDay := fs.Bool("all-day", false, "create all-day event")
@@ -73,7 +74,7 @@ func cmdAdd(args []string) {
 
 	uid := generateUID()
 	filename := uid + ".ics"
-	icsData := ical.BuildVEvent(uid, *summary, *location, cfg.Timezone, start, end, *allDay)
+	icsData := ical.BuildVEvent(uid, *summary, *location, *description, cfg.Timezone, start, end, *allDay)
 
 	// Resolve event URL
 	calURL := cal.URL

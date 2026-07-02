@@ -27,7 +27,7 @@ func TestEscapeICS(t *testing.T) {
 func TestBuildVEvent_Timed(t *testing.T) {
 	start := time.Date(2026, 4, 24, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2026, 4, 24, 11, 0, 0, 0, time.UTC)
-	ics := BuildVEvent("uid-1", "Meeting", "Room 1", "Europe/Lisbon", start, end, false)
+	ics := BuildVEvent("uid-1", "Meeting", "Room 1", "Bring notes", "Europe/Lisbon", start, end, false)
 
 	if !strings.Contains(ics, "UID:uid-1") {
 		t.Error("missing UID")
@@ -37,6 +37,9 @@ func TestBuildVEvent_Timed(t *testing.T) {
 	}
 	if !strings.Contains(ics, "LOCATION:Room 1") {
 		t.Error("missing LOCATION")
+	}
+	if !strings.Contains(ics, "DESCRIPTION:Bring notes") {
+		t.Error("missing DESCRIPTION")
 	}
 	if !strings.Contains(ics, "DTSTART;TZID=Europe/Lisbon:20260424T100000") {
 		t.Error("wrong DTSTART")
@@ -52,7 +55,7 @@ func TestBuildVEvent_Timed(t *testing.T) {
 func TestBuildVEvent_AllDay(t *testing.T) {
 	start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
 	end := time.Date(2026, 5, 2, 0, 0, 0, 0, time.UTC)
-	ics := BuildVEvent("uid-2", "Holiday", "", "UTC", start, end, true)
+	ics := BuildVEvent("uid-2", "Holiday", "", "", "UTC", start, end, true)
 
 	if !strings.Contains(ics, "DTSTART;VALUE=DATE:20260501") {
 		t.Error("wrong DTSTART for all-day")
@@ -63,15 +66,28 @@ func TestBuildVEvent_AllDay(t *testing.T) {
 	if strings.Contains(ics, "LOCATION:") {
 		t.Error("should not have LOCATION when empty")
 	}
+	if strings.Contains(ics, "DESCRIPTION:") {
+		t.Error("should not have DESCRIPTION when empty")
+	}
 }
 
 func TestBuildVEvent_EscapedSummary(t *testing.T) {
 	start := time.Date(2026, 4, 24, 10, 0, 0, 0, time.UTC)
 	end := time.Date(2026, 4, 24, 11, 0, 0, 0, time.UTC)
-	ics := BuildVEvent("uid-3", "Test, with; special", "", "UTC", start, end, false)
+	ics := BuildVEvent("uid-3", "Test, with; special", "", "", "UTC", start, end, false)
 
 	if !strings.Contains(ics, "SUMMARY:Test\\, with\\; special") {
 		t.Errorf("summary not escaped properly in: %s", ics)
+	}
+}
+
+func TestBuildVEvent_EscapedDescription(t *testing.T) {
+	start := time.Date(2026, 4, 24, 10, 0, 0, 0, time.UTC)
+	end := time.Date(2026, 4, 24, 11, 0, 0, 0, time.UTC)
+	ics := BuildVEvent("uid-4", "Meeting", "", "Line one\nLine two, with; detail", "UTC", start, end, false)
+
+	if !strings.Contains(ics, "DESCRIPTION:Line one\\nLine two\\, with\\; detail") {
+		t.Errorf("description not escaped properly in: %s", ics)
 	}
 }
 

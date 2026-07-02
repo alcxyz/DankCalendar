@@ -1,6 +1,7 @@
 package ical
 
 import (
+	"html"
 	"path"
 	"strings"
 	"time"
@@ -31,21 +32,37 @@ func ParseVEvent(icsData, href string, calIdx int, targetTZ string) *Event {
 	lines := unfold(icsData)
 
 	var inEvent bool
+	var nestedDepth int
 	ev := &Event{CalendarIdx: calIdx}
 
 	for _, line := range lines {
-		if line == "BEGIN:VEVENT" {
+		name, params, value := parseLine(line)
+
+		if name == "BEGIN" && value == "VEVENT" {
 			inEvent = true
 			continue
-		}
-		if line == "END:VEVENT" {
-			break
 		}
 		if !inEvent {
 			continue
 		}
 
-		name, params, value := parseLine(line)
+		if name == "BEGIN" {
+			nestedDepth++
+			continue
+		}
+		if name == "END" {
+			if value == "VEVENT" && nestedDepth == 0 {
+				break
+			}
+			if nestedDepth > 0 {
+				nestedDepth--
+			}
+			continue
+		}
+		if nestedDepth > 0 {
+			continue
+		}
+
 		switch name {
 		case "UID":
 			ev.UID = value
@@ -54,7 +71,7 @@ func ParseVEvent(icsData, href string, calIdx int, targetTZ string) *Event {
 		case "LOCATION":
 			ev.Location = unescapeICS(value)
 		case "DESCRIPTION":
-			ev.Description = unescapeICS(value)
+			ev.Description = descriptionText(value)
 		case "DTSTART":
 			ev.Start, ev.AllDay = parseDateTime(value, params, loc)
 		case "DTEND":
@@ -221,4 +238,62 @@ func unescapeICS(s string) string {
 	s = strings.ReplaceAll(s, "\\;", ";")
 	s = strings.ReplaceAll(s, "\\\\", "\\")
 	return s
+}
+
+func descriptionText(s string) string {
+	return htmlToText(unescapeICS(s))
+}
+
+func htmlToText(s string) string {
+	if !strings.Contains(s, "<") {
+		return html.UnescapeString(s)
+	}
+
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] != '<' {
+			b.WriteByte(s[i])
+			i++
+			continue
+		}
+
+		end := strings.IndexByte(s[i:], '>')
+		if end < 0 {
+			b.WriteByte(s[i])
+			i++
+			continue
+		}
+
+		tag := tagName(s[i+1 : i+end])
+		switch tag {
+		case "br", "div", "li", "p", "tr":
+			appendNewline(&b)
+		}
+		i += end + 1
+	}
+
+	return strings.TrimSpace(html.UnescapeString(b.String()))
+}
+
+func tagName(raw string) string {
+	tag := strings.TrimSpace(strings.ToLower(raw))
+	tag = strings.TrimPrefix(tag, "/")
+	tag = strings.TrimSpace(tag)
+	for i, r := range tag {
+		if r == ' ' || r == '\t' || r == '\r' || r == '\n' || r == '/' {
+			return tag[:i]
+		}
+	}
+	return tag
+}
+
+func appendNewline(b *strings.Builder) {
+	if b.Len() == 0 {
+		return
+	}
+	s := b.String()
+	if strings.HasSuffix(s, "\n") {
+		return
+	}
+	b.WriteByte('\n')
 }

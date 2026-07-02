@@ -22,6 +22,7 @@ func cmdEdit(args []string) {
 	endDate := fs.String("end-date", "", "new end date (YYYYMMDD)")
 	endTime := fs.String("end-time", "", "new end time (HHMM)")
 	location := fs.String("location", "", "new location (use empty string to clear)")
+	description := fs.String("description", "", "new description (use empty string to clear)")
 	allDay := fs.Bool("all-day", false, "convert to all-day event")
 	fs.Parse(args)
 
@@ -69,7 +70,7 @@ func cmdEdit(args []string) {
 
 	// Apply modifications
 	if *title != "" {
-		icsData = replaceICSLine(icsData, "SUMMARY", ical.EscapeICS(*title))
+		icsData = setICSProperty(icsData, "SUMMARY", ical.EscapeICS(*title))
 	}
 	if *startDate != "" && *startTime != "" {
 		newDT := fmt.Sprintf("DTSTART;TZID=%s:%sT%s00", cfg.Timezone, *startDate, *startTime)
@@ -85,13 +86,11 @@ func cmdEdit(args []string) {
 		newDT := fmt.Sprintf("DTEND;VALUE=DATE:%s", *endDate)
 		icsData = replaceICSPrefixed(icsData, "DTEND", newDT)
 	}
-	if fs.Lookup("location").Value.String() != "" || *location != "" {
-		if hasICSLine(icsData, "LOCATION") {
-			icsData = replaceICSLine(icsData, "LOCATION", ical.EscapeICS(*location))
-		} else if *location != "" {
-			icsData = strings.Replace(icsData, "END:VEVENT",
-				fmt.Sprintf("LOCATION:%s\nEND:VEVENT", ical.EscapeICS(*location)), 1)
-		}
+	if flagProvided(fs, "location") {
+		icsData = setICSProperty(icsData, "LOCATION", ical.EscapeICS(*location))
+	}
+	if flagProvided(fs, "description") {
+		icsData = setICSProperty(icsData, "DESCRIPTION", ical.EscapeICS(*description))
 	}
 
 	// PUT back
@@ -111,27 +110,42 @@ func cmdEdit(args []string) {
 	}
 }
 
-// replaceICSLine replaces the value of a simple ICS property line.
-func replaceICSLine(ics, propName, newValue string) string {
-	var result []string
-	for _, line := range strings.Split(ics, "\n") {
-		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, propName+":") {
-			result = append(result, propName+":"+newValue)
-		} else {
-			result = append(result, line)
-		}
+func setICSProperty(ics, propName, escapedValue string) string {
+	if hasICSLine(ics, propName) {
+		return replaceICSPrefixed(ics, propName, propName+":"+escapedValue)
 	}
-	return strings.Join(result, "\n")
+	if escapedValue == "" {
+		return ics
+	}
+	return strings.Replace(ics, "END:VEVENT", propName+":"+escapedValue+"\nEND:VEVENT", 1)
+}
+
+func flagProvided(fs *flag.FlagSet, name string) bool {
+	provided := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			provided = true
+		}
+	})
+	return provided
 }
 
 // replaceICSPrefixed replaces a line starting with propName (which may have params).
 func replaceICSPrefixed(ics, propName, newLine string) string {
 	var result []string
+	skipFolded := false
 	for _, line := range strings.Split(ics, "\n") {
+		if skipFolded {
+			if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+				continue
+			}
+			skipFolded = false
+		}
+
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, propName+";") || strings.HasPrefix(trimmed, propName+":") {
 			result = append(result, newLine)
+			skipFolded = true
 		} else {
 			result = append(result, line)
 		}
