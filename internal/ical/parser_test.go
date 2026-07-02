@@ -107,6 +107,54 @@ END:VCALENDAR`
 	}
 }
 
+func TestParseVEvent_IgnoresAlarmDescription(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:alarm-1
+SUMMARY:PMU Brows
+DESCRIPTION:Name: Biri Berge\nPhone Number: +47 95 23 62 50\nI've read and agree with <a target="_blank" href="https://annae.tattoo/terms"><strong>Terms of Service</strong></a>: Yes
+DTSTART;TZID=Europe/Oslo:20260704T130000
+DTEND;TZID=Europe/Oslo:20260704T133000
+BEGIN:VALARM
+TRIGGER:-PT10M
+DESCRIPTION:This is an event reminder
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR`
+
+	ev := ParseVEvent(ics, "", 0, "Europe/Oslo")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	want := "Name: Biri Berge\nPhone Number: +47 95 23 62 50\nI've read and agree with Terms of Service: Yes"
+	if ev.Description != want {
+		t.Errorf("Description = %q", ev.Description)
+	}
+}
+
+func TestParseVEvent_AlarmOnlyDescriptionIsIgnored(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:alarm-2
+SUMMARY:Reminder only
+DTSTART;TZID=Europe/Oslo:20260704T130000
+BEGIN:VALARM
+DESCRIPTION:This is an event reminder
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR`
+
+	ev := ParseVEvent(ics, "", 0, "Europe/Oslo")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	if ev.Description != "" {
+		t.Errorf("Description = %q, want empty", ev.Description)
+	}
+}
+
 func TestParseVEvent_UTCTimestamp(t *testing.T) {
 	ics := `BEGIN:VCALENDAR
 BEGIN:VEVENT
