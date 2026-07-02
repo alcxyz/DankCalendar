@@ -7,8 +7,8 @@
   "icon": "calendar_month",
   "type": "widget",
   "capabilities": ["dankbar-widget"],
-  "component": "./CalendarWidget.qml",
-  "settings": "./CalendarSettings.qml",
+  "component": "./CalendarWidget.qml?rev=details-v1",
+  "settings": "./CalendarSettings.qml?rev=details-v1",
   "permissions": ["settings_read", "settings_write", "process"],
   "requires": ["dankcalendar", "secret-tool", "notify-send"]
 }
