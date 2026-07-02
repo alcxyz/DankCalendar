@@ -78,6 +78,13 @@ PluginSettings {
     }
 
     ToggleSetting {
+        settingKey: "showDescription"
+        label: "Show event details"
+        description: "Display event details for events that have them"
+        defaultValue: true
+    }
+
+    ToggleSetting {
         settingKey: "showCalendarName"
         label: "Show calendar name"
         description: "Display which calendar each event belongs to"

@@ -13,6 +13,7 @@ PluginComponent {
     property int lookAheadDays: 14
     property int refreshInterval: 5       // minutes
     property bool showLocation: true
+    property bool showDescription: true
     property bool showCalendarName: true
     property bool hidePastEvents: false
     property bool showMeetLink: true
@@ -75,6 +76,7 @@ PluginComponent {
         lookAheadDays = pluginService.loadPluginData(pluginId, "lookAheadDays", 14) || 14;
         refreshInterval = pluginService.loadPluginData(pluginId, "refreshInterval", 5) || 5;
         showLocation = pluginService.loadPluginData(pluginId, "showLocation", true) !== false;
+        showDescription = pluginService.loadPluginData(pluginId, "showDescription", true) !== false;
         showCalendarName = pluginService.loadPluginData(pluginId, "showCalendarName", true) !== false;
         hidePastEvents = pluginService.loadPluginData(pluginId, "hidePastEvents", false) === true;
         showMeetLink = pluginService.loadPluginData(pluginId, "showMeetLink", true) !== false;
@@ -871,41 +873,51 @@ PluginComponent {
                     verticalAlignment: TextInput.AlignVCenter
                 }
 
-                // Details
-                TextEdit {
+                Column {
                     width: parent.width
-                    height: Math.max(76, contentHeight + Theme.spacingM)
-                    text: root.addDescription
-                    color: Theme.surfaceText
-                    font.pixelSize: Theme.fontSizeMedium
-                    wrapMode: TextEdit.Wrap
-                    selectByMouse: true
-                    onTextChanged: root.addDescription = text
+                    spacing: Theme.spacingXS
 
-                    Rectangle {
-                        anchors.fill: parent
-                        color: "transparent"
-                        border.width: 1
-                        border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
-                        radius: Theme.cornerRadius
-                        z: -1
+                    StyledText {
+                        text: "Details"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
                     }
 
-                    Text {
-                        text: "Details (optional)"
-                        color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                    TextEdit {
+                        width: parent.width
+                        height: Math.max(96, contentHeight + Theme.spacingM)
+                        text: root.addDescription
+                        color: Theme.surfaceText
                         font.pixelSize: Theme.fontSizeMedium
-                        anchors.top: parent.top
-                        anchors.topMargin: Theme.spacingS
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.spacingS
-                        visible: root.addDescription === ""
-                    }
+                        wrapMode: TextEdit.Wrap
+                        selectByMouse: true
+                        onTextChanged: root.addDescription = text
 
-                    leftPadding: Theme.spacingS
-                    rightPadding: Theme.spacingS
-                    topPadding: Theme.spacingS
-                    bottomPadding: Theme.spacingS
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.width: 1
+                            border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                            radius: Theme.cornerRadius
+                            z: -1
+                        }
+
+                        Text {
+                            text: "Optional event details"
+                            color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                            font.pixelSize: Theme.fontSizeMedium
+                            anchors.top: parent.top
+                            anchors.topMargin: Theme.spacingS
+                            anchors.left: parent.left
+                            anchors.leftMargin: Theme.spacingS
+                            visible: root.addDescription === ""
+                        }
+
+                        leftPadding: Theme.spacingS
+                        rightPadding: Theme.spacingS
+                        topPadding: Theme.spacingS
+                        bottomPadding: Theme.spacingS
+                    }
                 }
 
                 // ── Calendar grid date picker ──────────────────────
@@ -1453,41 +1465,51 @@ PluginComponent {
                     verticalAlignment: TextInput.AlignVCenter
                 }
 
-                // Details
-                TextEdit {
+                Column {
                     width: parent.width
-                    height: Math.max(76, contentHeight + Theme.spacingM)
-                    text: root.editDescription
-                    color: Theme.surfaceText
-                    font.pixelSize: Theme.fontSizeMedium
-                    wrapMode: TextEdit.Wrap
-                    selectByMouse: true
-                    onTextChanged: root.editDescription = text
+                    spacing: Theme.spacingXS
 
-                    Rectangle {
-                        anchors.fill: parent
-                        color: "transparent"
-                        border.width: 1
-                        border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
-                        radius: Theme.cornerRadius
-                        z: -1
+                    StyledText {
+                        text: "Details"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
                     }
 
-                    Text {
-                        text: "Details (optional)"
-                        color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                    TextEdit {
+                        width: parent.width
+                        height: Math.max(96, contentHeight + Theme.spacingM)
+                        text: root.editDescription
+                        color: Theme.surfaceText
                         font.pixelSize: Theme.fontSizeMedium
-                        anchors.top: parent.top
-                        anchors.topMargin: Theme.spacingS
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.spacingS
-                        visible: root.editDescription === ""
-                    }
+                        wrapMode: TextEdit.Wrap
+                        selectByMouse: true
+                        onTextChanged: root.editDescription = text
 
-                    leftPadding: Theme.spacingS
-                    rightPadding: Theme.spacingS
-                    topPadding: Theme.spacingS
-                    bottomPadding: Theme.spacingS
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.width: 1
+                            border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                            radius: Theme.cornerRadius
+                            z: -1
+                        }
+
+                        Text {
+                            text: "Optional event details"
+                            color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                            font.pixelSize: Theme.fontSizeMedium
+                            anchors.top: parent.top
+                            anchors.topMargin: Theme.spacingS
+                            anchors.left: parent.left
+                            anchors.leftMargin: Theme.spacingS
+                            visible: root.editDescription === ""
+                        }
+
+                        leftPadding: Theme.spacingS
+                        rightPadding: Theme.spacingS
+                        topPadding: Theme.spacingS
+                        bottomPadding: Theme.spacingS
+                    }
                 }
 
                 // Calendar grid for edit
@@ -1811,7 +1833,7 @@ PluginComponent {
                                         text: modelData.description
                                         color: Theme.surfaceVariantText
                                         font.pixelSize: Theme.fontSizeSmall
-                                        visible: (modelData.description || "") !== ""
+                                        visible: root.showDescription && (modelData.description || "") !== ""
                                         width: parent.width
                                         wrapMode: Text.WordWrap
                                         maximumLineCount: 2
