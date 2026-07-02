@@ -16,7 +16,7 @@ func EscapeICS(s string) string {
 }
 
 // BuildVEvent generates a complete VCALENDAR with a single VEVENT.
-func BuildVEvent(uid, summary, location, timezone string, start, end time.Time, allDay bool) string {
+func BuildVEvent(uid, summary, location, description, timezone string, start, end time.Time, allDay bool) string {
 	now := time.Now().UTC().Format("20060102T150405Z")
 	summary = EscapeICS(summary)
 
@@ -34,8 +34,13 @@ func BuildVEvent(uid, summary, location, timezone string, start, end time.Time, 
 		locationLine = fmt.Sprintf("LOCATION:%s\n", EscapeICS(location))
 	}
 
-	return fmt.Sprintf("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//DankCalendar\nBEGIN:VEVENT\nUID:%s\n%s\n%s\nDTSTAMP:%s\nSUMMARY:%s\n%sEND:VEVENT\nEND:VCALENDAR\n",
-		uid, dtstart, dtend, now, summary, locationLine)
+	var descriptionLine string
+	if description != "" {
+		descriptionLine = fmt.Sprintf("DESCRIPTION:%s\n", EscapeICS(description))
+	}
+
+	return fmt.Sprintf("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//DankCalendar\nBEGIN:VEVENT\nUID:%s\n%s\n%s\nDTSTAMP:%s\nSUMMARY:%s\n%s%sEND:VEVENT\nEND:VCALENDAR\n",
+		uid, dtstart, dtend, now, summary, locationLine, descriptionLine)
 }
 
 // ValidateFilename checks that a filename is safe (no path traversal).

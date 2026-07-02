@@ -47,6 +47,7 @@ PluginComponent {
     }
     property bool addAllDay: false
     property string addLocation: ""
+    property string addDescription: ""
 
     // Edit event form state
     property bool showEditForm: false
@@ -57,6 +58,7 @@ PluginComponent {
     property bool editAllDay: false
     property string editError: ""
     property string editLocation: ""
+    property string editDescription: ""
 
     // ── Internal ────────────────────────────────────────────────────
     property string _pendingOutput: ""
@@ -281,6 +283,7 @@ PluginComponent {
         }
 
         if (addLocation) { cmd.push("--location"); cmd.push(addLocation); }
+        if (addDescription) { cmd.push("--description"); cmd.push(addDescription); }
         addProc.command = cmd;
         addProc.running = true;
     }
@@ -297,6 +300,7 @@ PluginComponent {
                 if (json.success) {
                     root.addTitle = "";
                     root.addLocation = "";
+                    root.addDescription = "";
                     root.addStartDate = new Date();
                     var d = new Date();
                     d.setHours(d.getHours() + 1);
@@ -319,6 +323,7 @@ PluginComponent {
         editTitle = ev.title;
         editAllDay = ev.allDay;
         editLocation = ev.location || "";
+        editDescription = ev.description || "";
         editError = "";
 
         if (ev.allDay) {
@@ -364,6 +369,8 @@ PluginComponent {
 
         cmdArgs.push("--location");
         cmdArgs.push(editLocation);
+        cmdArgs.push("--description");
+        cmdArgs.push(editDescription);
 
         _editOutput = "";
         editProc.command = cmdArgs;
@@ -862,6 +869,43 @@ PluginComponent {
 
                     leftPadding: Theme.spacingS
                     verticalAlignment: TextInput.AlignVCenter
+                }
+
+                // Details
+                TextEdit {
+                    width: parent.width
+                    height: Math.max(76, contentHeight + Theme.spacingM)
+                    text: root.addDescription
+                    color: Theme.surfaceText
+                    font.pixelSize: Theme.fontSizeMedium
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    onTextChanged: root.addDescription = text
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "transparent"
+                        border.width: 1
+                        border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                        radius: Theme.cornerRadius
+                        z: -1
+                    }
+
+                    Text {
+                        text: "Details (optional)"
+                        color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                        font.pixelSize: Theme.fontSizeMedium
+                        anchors.top: parent.top
+                        anchors.topMargin: Theme.spacingS
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacingS
+                        visible: root.addDescription === ""
+                    }
+
+                    leftPadding: Theme.spacingS
+                    rightPadding: Theme.spacingS
+                    topPadding: Theme.spacingS
+                    bottomPadding: Theme.spacingS
                 }
 
                 // ── Calendar grid date picker ──────────────────────
@@ -1409,6 +1453,43 @@ PluginComponent {
                     verticalAlignment: TextInput.AlignVCenter
                 }
 
+                // Details
+                TextEdit {
+                    width: parent.width
+                    height: Math.max(76, contentHeight + Theme.spacingM)
+                    text: root.editDescription
+                    color: Theme.surfaceText
+                    font.pixelSize: Theme.fontSizeMedium
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    onTextChanged: root.editDescription = text
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "transparent"
+                        border.width: 1
+                        border.color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                        radius: Theme.cornerRadius
+                        z: -1
+                    }
+
+                    Text {
+                        text: "Details (optional)"
+                        color: Theme.withAlpha(Theme.surfaceText, 0.3)
+                        font.pixelSize: Theme.fontSizeMedium
+                        anchors.top: parent.top
+                        anchors.topMargin: Theme.spacingS
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacingS
+                        visible: root.editDescription === ""
+                    }
+
+                    leftPadding: Theme.spacingS
+                    rightPadding: Theme.spacingS
+                    topPadding: Theme.spacingS
+                    bottomPadding: Theme.spacingS
+                }
+
                 // Calendar grid for edit
                 Column {
                     width: parent.width
@@ -1723,6 +1804,17 @@ PluginComponent {
                                         font.pixelSize: Theme.fontSizeSmall
                                         visible: root.showLocation && (modelData.location || "") !== ""
                                         width: parent.width
+                                        elide: Text.ElideRight
+                                    }
+
+                                    StyledText {
+                                        text: modelData.description
+                                        color: Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        visible: (modelData.description || "") !== ""
+                                        width: parent.width
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: 2
                                         elide: Text.ElideRight
                                     }
 

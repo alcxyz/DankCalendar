@@ -37,6 +37,9 @@ END:VCALENDAR`
 	if ev.Location != "Room 42" {
 		t.Errorf("Location = %q, want %q", ev.Location, "Room 42")
 	}
+	if ev.Description != "Weekly sync" {
+		t.Errorf("Description = %q, want %q", ev.Description, "Weekly sync")
+	}
 	if ev.Filename != "test-123.ics" {
 		t.Errorf("Filename = %q, want %q", ev.Filename, "test-123.ics")
 	}
