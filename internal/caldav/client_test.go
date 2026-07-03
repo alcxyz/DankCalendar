@@ -56,3 +56,36 @@ func TestNewClientPreservesBasicAuth(t *testing.T) {
 		t.Fatalf("Authorization = %q, want %q", gotAuth, want)
 	}
 }
+
+func TestSafeRedirect(t *testing.T) {
+	cases := []struct {
+		name     string
+		current  string
+		location string
+		want     string
+		wantErr  bool
+	}{
+		{"same host absolute", "https://dav.example.com/cal/", "https://dav.example.com/principals/", "https://dav.example.com/principals/", false},
+		{"relative path", "https://dav.example.com/cal/", "/principals/user/", "https://dav.example.com/principals/user/", false},
+		{"cross host rejected", "https://dav.example.com/cal/", "https://attacker.example.net/steal", "", true},
+		{"downgrade to http rejected", "https://dav.example.com/cal/", "http://dav.example.com/cal/", "", true},
+		{"host case-insensitive", "https://DAV.example.com/cal/", "https://dav.example.com/x", "https://dav.example.com/x", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := safeRedirect(tc.current, tc.location)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected error, got %q", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tc.want {
+				t.Errorf("safeRedirect(%q, %q) = %q, want %q", tc.current, tc.location, got, tc.want)
+			}
+		})
+	}
+}

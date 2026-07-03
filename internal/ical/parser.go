@@ -23,6 +23,13 @@ type Event struct {
 	RRule        string `json:"-"`
 }
 
+// isHTTPSURL reports whether value is an https:// URL. Conference links come
+// from event data controlled by the meeting organizer (potentially a third
+// party), so we only surface links the UI can safely hand to the browser.
+func isHTTPSURL(value string) bool {
+	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(value)), "https://")
+}
+
 // ParseVEvent extracts a single VEVENT from ICS data.
 // href is the event's URL path, used to derive the filename.
 // targetTZ is the IANA timezone name to normalize timed events into
@@ -79,11 +86,11 @@ func ParseVEvent(icsData, href string, calIdx int, targetTZ string) *Event {
 		case "RRULE":
 			ev.RRule = value
 		case "X-GOOGLE-CONFERENCE":
-			if ev.MeetLink == "" {
+			if ev.MeetLink == "" && isHTTPSURL(value) {
 				ev.MeetLink = value
 			}
 		case "CONFERENCE":
-			if ev.MeetLink == "" {
+			if ev.MeetLink == "" && isHTTPSURL(value) {
 				ev.MeetLink = value
 			}
 		case "ATTENDEE":

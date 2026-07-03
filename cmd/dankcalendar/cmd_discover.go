@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"io"
+	"os"
+	"strings"
 
 	"github.com/alcxyz/DankCalendar/internal/caldav"
 	"github.com/alcxyz/DankCalendar/internal/config"
@@ -13,24 +16,34 @@ func cmdDiscover(args []string) {
 	fs := flag.NewFlagSet("discover", flag.ExitOnError)
 	url := fs.String("url", "", "CalDAV server URL")
 	user := fs.String("username", "", "CalDAV username")
-	pw := fs.String("password", "", "CalDAV password")
+	pw := fs.String("password", "", "CalDAV password (avoid; visible in process list)")
+	pwStdin := fs.Bool("password-stdin", false, "read CalDAV password from stdin instead of --password")
 	appendMode := fs.Bool("append", false, "append discovered calendars to existing config instead of replacing")
 	fs.Parse(args)
 
-	if *url == "" || *user == "" || *pw == "" {
-		exitError("--url, --username, and --password are all required")
+	password := *pw
+	if *pwStdin {
+		data, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			exitError("reading password from stdin: " + err.Error())
+		}
+		password = strings.TrimRight(string(data), "\r\n")
+	}
+
+	if *url == "" || *user == "" || password == "" {
+		exitError("--url, --username, and a password (--password or --password-stdin) are all required")
 	}
 
 	// Store password in keyring
 	if !keyring.Available() {
 		exitError("secret-tool is not installed — install libsecret-tools")
 	}
-	if err := keyring.Store(*user, *pw); err != nil {
+	if err := keyring.Store(*user, password); err != nil {
 		exitError("keyring: " + err.Error())
 	}
 
 	// Discover calendars
-	client, err := caldav.NewClient(*url, *user, *pw)
+	client, err := caldav.NewClient(*url, *user, password)
 	if err != nil {
 		exitError(err.Error())
 	}

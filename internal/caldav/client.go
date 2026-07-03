@@ -84,7 +84,11 @@ func (c *Client) Propfind(rawURL, body, depth string) ([]byte, string, error) {
 			resp.StatusCode == 307 || resp.StatusCode == 308 {
 			loc := resp.Header.Get("Location")
 			if loc != "" {
-				currentURL = loc
+				next, err := safeRedirect(currentURL, loc)
+				if err != nil {
+					return nil, currentURL, err
+				}
+				currentURL = next
 				continue
 			}
 		}
@@ -155,6 +159,29 @@ func (c *Client) Get(rawURL string) ([]byte, error) {
 		return nil, fmt.Errorf("GET %s: %d", rawURL, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+// safeRedirect resolves a redirect Location against the current URL and
+// rejects any redirect that would leave HTTPS or move to a different host.
+// This prevents the Authorization header from being forwarded to an
+// attacker-controlled or cleartext endpoint.
+func safeRedirect(current, location string) (string, error) {
+	base, err := url.Parse(current)
+	if err != nil {
+		return "", fmt.Errorf("invalid redirect origin %q: %w", current, err)
+	}
+	ref, err := url.Parse(location)
+	if err != nil {
+		return "", fmt.Errorf("invalid redirect target %q: %w", location, err)
+	}
+	next := base.ResolveReference(ref)
+	if next.Scheme != "https" {
+		return "", fmt.Errorf("refusing redirect to non-HTTPS URL %q", next.String())
+	}
+	if !strings.EqualFold(next.Hostname(), base.Hostname()) {
+		return "", fmt.Errorf("refusing cross-host redirect from %q to %q", base.Hostname(), next.Hostname())
+	}
+	return next.String(), nil
 }
 
 // ResolveURL safely resolves a relative path against the base URL.
