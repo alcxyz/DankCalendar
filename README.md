@@ -59,6 +59,8 @@ programs.dank-material-shell.plugins.dankCalendar = {
 
 Google Workspace requires OAuth 2.0 for CalDAV. Basic auth and app-specific passwords return `401 Unauthorized` on Google's current CalDAV endpoint.
 
+DankCalendar does not provide a hosted or shared Google OAuth application. Each user supplies their own Google Cloud OAuth desktop client for their own Google account or Workspace. If Google shows `dankcalendar has not completed the Google verification process`, that message refers to the OAuth app in the user's Google Cloud project. For a personal/test setup, add the Google account under the OAuth consent screen's test users. For a public app, complete Google's OAuth verification.
+
 To add Google calendars:
 
 1. Create a Google OAuth desktop client ID in Google Cloud Console and enable the Google Calendar API.
