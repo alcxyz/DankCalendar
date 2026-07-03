@@ -31,8 +31,9 @@ PluginSettings {
     StringSetting {
         settingKey: "caldavPassword"
         label: "Password"
-        description: "App-specific password for your CalDAV account. Stored securely in the system keyring via secret-tool."
+        description: "App-specific password for your CalDAV account. Stored securely in the system keyring via secret-tool, then cleared from plugin settings."
         placeholder: "Enter password..."
+        password: true
     }
 
     StyledText {

@@ -275,3 +275,43 @@ END:VCALENDAR`
 		t.Errorf("MeetLink = %q, want Zoom URL", ev.MeetLink)
 	}
 }
+
+func TestParseVEvent_RejectsNonHTTPSMeetLink(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:evil@example.com
+SUMMARY:Sketchy meeting
+DTSTART:20260101T100000Z
+DTEND:20260101T110000Z
+X-GOOGLE-CONFERENCE:file:///etc/passwd
+END:VEVENT
+END:VCALENDAR`
+	ev := ParseVEvent(ics, "/cal/evil.ics", 0, "")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	if ev.MeetLink != "" {
+		t.Errorf("MeetLink = %q, want empty (non-https scheme must be dropped)", ev.MeetLink)
+	}
+}
+
+func TestParseVEvent_AcceptsHTTPSMeetLink(t *testing.T) {
+	ics := `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:ok@example.com
+SUMMARY:Real meeting
+DTSTART:20260101T100000Z
+DTEND:20260101T110000Z
+CONFERENCE:https://meet.google.com/abc-defg-hij
+END:VEVENT
+END:VCALENDAR`
+	ev := ParseVEvent(ics, "/cal/ok.ics", 0, "")
+	if ev == nil {
+		t.Fatal("expected event, got nil")
+	}
+	if ev.MeetLink != "https://meet.google.com/abc-defg-hij" {
+		t.Errorf("MeetLink = %q, want the https URL", ev.MeetLink)
+	}
+}

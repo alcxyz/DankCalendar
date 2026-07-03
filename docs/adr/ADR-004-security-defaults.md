@@ -18,6 +18,10 @@ Apply defense-in-depth across all layers:
 - **URL construction**: Use `url.ResolveReference()` for all URL building — never string concatenation. This applies to `resolveHref` in `internal/caldav/discover.go` (fixed in v0.3.3; prior to v0.3.2 the function used string concatenation, producing malformed paths when `effectiveBase` contained a non-root path).
 - **Config permissions**: Config files are created with `0600` permissions.
 - **No shell expansion**: All subprocess calls use `exec.Command` with explicit argument lists, never shell interpolation.
+- **No credential-forwarding redirects**: The CalDAV client follows redirects manually (`safeRedirect` in `internal/caldav/client.go`) and refuses any redirect that downgrades from HTTPS or changes host, so the `Authorization` header is never replayed to an attacker-controlled or cleartext endpoint.
+- **Password never on argv**: `discover` accepts `--password-stdin`; the QML widget feeds the CalDAV password over stdin so it is not exposed in `/proc/<pid>/cmdline` or `ps`. The legacy `--password` flag remains for manual/CLI use.
+- **Password not persisted in plugin data**: After the keyring store succeeds, the widget clears `caldavPassword` from DMS plugin settings, so the plaintext copy does not linger on disk. The settings field is also masked (`password: true`).
+- **Conference links are HTTPS-only**: `X-GOOGLE-CONFERENCE`/`CONFERENCE` values from (potentially third-party) event data are only surfaced as clickable Meet links when they are `https://` URLs, both in the Go parser and at the `Qt.openUrlExternally` call site, preventing arbitrary URI schemes from reaching the browser/opener.
 
 ## Alternatives Considered
 

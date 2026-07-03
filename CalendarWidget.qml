@@ -90,6 +90,9 @@ PluginComponent {
     }
 
     // ── Sync credentials via dankcalendar discover ──────────────────
+    // The password is handed to the CLI over stdin (never argv, which is
+    // visible in /proc and ps) and is cleared from plugin settings once the
+    // keyring store succeeds, so it does not linger in DMS's plugin data.
     function syncCredentials() {
         if (!caldavUrl || !caldavUsername || !caldavPassword) return;
         var credsKey = caldavUrl + "|" + caldavUsername + "|" + caldavPassword;
@@ -99,19 +102,31 @@ PluginComponent {
         syncProc.command = ["dankcalendar", "discover",
             "--url", caldavUrl,
             "--username", caldavUsername,
-            "--password", caldavPassword,
+            "--password-stdin",
             "--append"];
+        syncProc.stdinEnabled = true;
         syncProc.running = true;
     }
 
     Process {
         id: syncProc
         running: false
+        onStarted: {
+            write(root.caldavPassword + "\n");
+            // Closing stdin sends EOF so the CLI's stdin read completes.
+            stdinEnabled = false;
+        }
         stdout: SplitParser {
             onRead: data => { root._syncOutput += data; }
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
+                // Credentials are now in the keyring; drop the plaintext copy
+                // that DMS persisted in plugin data.
+                if (root.pluginService && root.pluginService.savePluginData) {
+                    root.pluginService.savePluginData(root.pluginId, "caldavPassword", "");
+                }
+                root.caldavPassword = "";
                 root.fetchEvents();
                 root.fetchCalendars();
             } else {
@@ -1890,7 +1905,11 @@ PluginComponent {
                                     height: meetLinkRow.height
                                     visible: meetLinkRow.visible
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: Qt.openUrlExternally(modelData.meetLink)
+                                    onClicked: {
+                                        var link = modelData.meetLink || "";
+                                        if (link.toLowerCase().indexOf("https://") === 0)
+                                            Qt.openUrlExternally(link);
+                                    }
                                 }
                             }
                         }
