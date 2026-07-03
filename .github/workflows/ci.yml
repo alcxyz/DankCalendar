@@ -74,9 +74,8 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           TARGET_SHA="$(git rev-parse HEAD)"
-          EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" --jq ".object.sha" 2>/dev/null || true)"
 
-          if [ -n "$EXISTING_SHA" ]; then
+          if EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" --jq ".object.sha" 2>/dev/null)"; then
             if [ "$EXISTING_SHA" != "$TARGET_SHA" ]; then
               echo "Tag $VERSION already exists at $EXISTING_SHA; this main push is not a new release."
               echo "should_release=false" >> "$GITHUB_OUTPUT"
