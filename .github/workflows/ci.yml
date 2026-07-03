@@ -68,14 +68,22 @@ jobs:
           echo "version=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Auto-tag release
+        id: release_tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           TARGET_SHA="$(git rev-parse HEAD)"
+          EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" --jq ".object.sha" 2>/dev/null || true)"
 
-          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" >/dev/null 2>&1; then
-            echo "Tag $VERSION already exists, skipping."
+          if [ -n "$EXISTING_SHA" ]; then
+            if [ "$EXISTING_SHA" != "$TARGET_SHA" ]; then
+              echo "Tag $VERSION already exists at $EXISTING_SHA; this main push is not a new release."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            echo "Tag $VERSION already points at $TARGET_SHA."
           else
             echo "Creating tag $VERSION at $TARGET_SHA"
             gh api \
@@ -86,25 +94,62 @@ jobs:
           fi
 
           gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" >/dev/null
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
+        if: steps.release_tag.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           TARGET_SHA="$(git rev-parse HEAD)"
+          PREVIOUS_TAG="$(git tag --sort=-v:refname | awk -v current="$VERSION" '$0 != current { print; exit }')"
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            COMPARE_URL="https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...${VERSION}"
+            mapfile -t CHANGES < <(
+              git log --reverse --format="- %s (%h)" "${PREVIOUS_TAG}..HEAD" |
+                grep -Ev "^- (Release v|Promote dev to main|Merge pull request|chore: merge dev|ci:|docs:)" || true
+            )
+          else
+            COMPARE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${VERSION}"
+            mapfile -t CHANGES < <(git log --reverse --format="- %s (%h)")
+          fi
+
+          {
+            echo "## What's Changed"
+            echo
+            if [ "${#CHANGES[@]}" -eq 0 ]; then
+              echo "- Release ${VERSION}."
+            else
+              printf "%s\n" "${CHANGES[@]}"
+            fi
+            echo
+            echo "**Full Changelog**: ${COMPARE_URL}"
+          } > release-notes.md
 
           if gh release view "$VERSION" >/dev/null 2>&1; then
             gh release edit "$VERSION" \
-              --draft=false \
-              --prerelease=false \
-              --latest \
               --target "$TARGET_SHA" \
+              --notes-file release-notes.md \
               --verify-tag
           else
             gh release create "$VERSION" \
               --target "$TARGET_SHA" \
-              --latest \
+              --notes-file release-notes.md \
               --verify-tag \
-              --generate-notes
+              --latest
+          fi
+
+          RELEASE_ID="$(gh release view "$VERSION" --json databaseId --jq ".databaseId")"
+          jq -n \
+            --arg name "$VERSION" \
+            --arg target "$TARGET_SHA" \
+            '{name:$name, target_commitish:$target, draft:false, prerelease:false, make_latest:"true"}' |
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" --input - >/dev/null
+
+          LATEST_TAG="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq ".tag_name")"
+          if [ "$LATEST_TAG" != "$VERSION" ]; then
+            echo "::error::Latest release is $LATEST_TAG, expected $VERSION."
+            exit 1
           fi
