@@ -1,27 +1,42 @@
 # DankCalendar
 
-CalDAV calendar plugin for [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). Single Go binary, stdlib-only, keyring-only credentials.
+CalDAV calendar plugin for
+[DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell). One
+stdlib-only Go binary talks to your CalDAV server; credentials live only in
+the system keyring.
 
 ![Screenshot](docs/screenshot.png)
 
-## Commands
+## What you get
 
-| Command | Description |
-|---|---|
-| `dankcalendar list` | List upcoming events |
-| `dankcalendar calendars` | Discover available calendars |
-| `dankcalendar add` | Create a new event |
-| `dankcalendar edit` | Modify an existing event |
-| `dankcalendar delete` | Delete an event |
-| `dankcalendar notify` | Send desktop notifications for upcoming events |
-| `dankcalendar setup` | Configure CalDAV credentials |
-| `dankcalendar google-discover` | Authorize and discover Google calendars |
+- **Upcoming events in the bar**, with the popout to create, edit, and delete
+  them.
+- **Reminders** as desktop notifications.
+- **Any CalDAV server**, plus Google Workspace through your own OAuth desktop
+  client.
+- **Multiple calendars**, normalised to one timezone so cross-calendar
+  ordering is correct, with recurring events expanded server-side and a
+  client-side fallback for subscribed calendars.
+- **Secure by default**: HTTPS only, keyring-only secrets, `0600` config.
 
-## Installation
+If you already manage calendars with khal or Evolution, the
+[khal-calendar](https://github.com/fishman/dms-khal-calendar),
+[qCal Calendar](https://github.com/szabolcsf/dms-qcal-calendar), or
+[Calendar for DMS](https://github.com/arqueon/dms-calendar) plugins may fit
+your existing setup better. DankCalendar is for when you want account setup
+and CalDAV handled by its own backend.
+
+## Requirements
+
+Go 1.22+ to build. At runtime: `secret-tool` (libsecret) and `notify-send`
+(libnotify).
+
+## Install
 
 ### Nix (flake)
 
-Add as a `flake = false` input and include in your DMS plugin configuration:
+Add as a `flake = false` input and include it in your DMS plugin
+configuration:
 
 ```nix
 inputs.dms-plugin-calendar = {
@@ -39,66 +54,36 @@ programs.dank-material-shell.plugins.dankCalendar = {
 
 ### Manual
 
-1. Build the binary and place it in PATH:
-   ```sh
-   go build -o dankcalendar ./cmd/dankcalendar
-   cp dankcalendar ~/.local/bin/
-   ```
-
-2. Copy the plugin directory to DMS:
-   ```sh
-   cp -r . ~/.config/DankMaterialShell/plugins/DankCalendar/
-   ```
-
-3. Configure your CalDAV account in DMS plugin settings, or run:
-   ```sh
-   dankcalendar setup
-   ```
-
-### Google Workspace / OAuth
-
-Google Workspace requires OAuth 2.0 for CalDAV. Basic auth and app-specific passwords return `401 Unauthorized` on Google's current CalDAV endpoint.
-
-DankCalendar does not provide a hosted or shared Google OAuth application. Each user supplies their own Google Cloud OAuth desktop client for their own Google account or Workspace. If Google shows `dankcalendar has not completed the Google verification process`, that message refers to the OAuth app in the user's Google Cloud project. For a personal/test setup, add the Google account under the OAuth consent screen's test users. For a public app, complete Google's OAuth verification.
-
-To add Google calendars:
-
-1. Create a Google OAuth desktop client ID in Google Cloud Console and enable the Google Calendar API.
-2. Run:
-   ```sh
-   dankcalendar google-discover --account you@example.com --client-id YOUR_CLIENT_ID.apps.googleusercontent.com
-   ```
-3. Complete the browser authorization flow. DankCalendar stores the refresh token in the system keyring and writes discovered calendars to the normal config file.
-
-Discovered Google calendars use Google's CalDAV endpoint with OAuth bearer-token authentication. Event listing, creation, editing, and deletion still use DankCalendar's CalDAV backend.
-
-## Build
-
 ```sh
 go build -o dankcalendar ./cmd/dankcalendar
+cp dankcalendar ~/.local/bin/
+cp -r . ~/.config/DankMaterialShell/plugins/DankCalendar/
 ```
 
-## Design
+## Set up an account
 
-- **Single binary** — no Python, no submodules
-- **Stdlib-only** — no external Go dependencies
-- **Keyring-only** — passwords stored via `secret-tool`, never in config files
-- **Google Workspace support** — OAuth setup with Google Calendar discovery and CalDAV event operations
-- **Security by default** — HTTPS-only, ICS escaping, path traversal protection, `0600` config
-- **JSON output** — one JSON object per command on stdout, errors on stderr
-- **Timezone-aware** — events from all calendars normalised to the configured timezone for correct cross-calendar sorting
-- **Recurring events** — server-side expansion via CalDAV `<expand>` with client-side RRULE fallback for subscribed calendars
+Configure your CalDAV account in DMS plugin settings, or run:
 
-See [docs/adr/](docs/adr/) for architectural decision records.
+```sh
+dankcalendar setup
+```
 
-## Dependencies
+Google accounts need OAuth; basic auth and app passwords are rejected by
+Google's CalDAV endpoint. Follow
+[Google Workspace and OAuth](docs/google-oauth.md).
 
-- **Build**: Go 1.22+
-- **Runtime**: `secret-tool` (libsecret), `notify-send` (libnotify)
+## Learn more
+
+| Topic | Read |
+|---|---|
+| Google Workspace and OAuth setup | [docs/google-oauth.md](docs/google-oauth.md) |
+| Command-line reference | [docs/cli.md](docs/cli.md) |
+| Design decisions | [docs/adr/README.md](docs/adr/README.md) |
+| Development, design boundaries, and releasing | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 <details>
 <summary>Support</summary>
