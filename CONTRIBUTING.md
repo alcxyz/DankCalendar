@@ -36,6 +36,21 @@ dms ipc call plugins reload dankCalendar
 - `cmd/dankcalendar/` -- CLI entry points (one file per subcommand)
 - `internal/` -- Go packages (caldav, ical, keyring, config, output)
 
+## Design boundaries
+
+- **Single binary:** no Python, no submodules.
+- **Stdlib-only:** no external Go dependencies.
+- **Keyring-only:** passwords stored via `secret-tool`, never in config files.
+- **Security by default:** HTTPS-only, ICS escaping, path traversal protection,
+  `0600` config.
+- **JSON output:** one JSON object per command on stdout, errors on stderr.
+- **Timezone-aware:** events from all calendars are normalised to the
+  configured timezone for correct cross-calendar sorting.
+- **Recurring events:** server-side expansion via CalDAV `<expand>` with a
+  client-side RRULE fallback for subscribed calendars.
+
+See [docs/adr/](docs/adr/) for the architectural decision records.
+
 ## Making changes
 
 1. Fork the repo and create a branch from `dev`
