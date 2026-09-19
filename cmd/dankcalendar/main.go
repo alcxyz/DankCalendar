@@ -34,7 +34,7 @@ func main() {
 	case "--help", "-h":
 		usage()
 	case "--version", "-v":
-		fmt.Println(version)
+		fmt.Println(buildVersion())
 	case "list":
 		cmdList(args)
 	case "calendars":

@@ -1,2 +1,8 @@
 # built binary (root only)
 /dankcalendar
+
+dist/
+
+__pycache__/
+
+*.pyc

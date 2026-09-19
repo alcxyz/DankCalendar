@@ -12,3 +12,5 @@
 | [ADR-008](ADR-008-timezone-normalization-and-recurrence-expansion.md) | Timezone normalization and server-side recurrence expansion | data |
 | [ADR-009](ADR-009-no-unsupported-qml-properties-in-settings.md) | No unsupported QML properties in settings components | integration |
 | [ADR-010](ADR-010-provider-auth-and-google-calendar-discovery.md) | Provider auth and Google Calendar discovery | architecture |
+
+- [ADR-011](ADR-011-packaged-build-identity.md): Package a matching development identity for plugin and helper.
