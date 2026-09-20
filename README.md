@@ -35,29 +35,36 @@ Go 1.22+ to build. At runtime: `secret-tool` (libsecret) and `notify-send`
 
 ### Nix (flake)
 
-Add as a `flake = false` input and include it in your DMS plugin
-configuration:
+Use the published release flake so the helper and DMS manifest come from the
+same package:
 
 ```nix
-inputs.dms-plugin-calendar = {
-  url = "github:alcxyz/DankCalendar";
-  flake = false;
-};
+inputs.dankcalendar.url = "github:alcxyz/DankCalendar/v0.7.0";
 ```
 
 ```nix
-programs.dank-material-shell.plugins.dankCalendar = {
-  enable = true;
-  src = inputs.dms-plugin-calendar;
-};
+{ inputs, pkgs, ... }:
+let
+  package = inputs.dankcalendar.packages.${pkgs.stdenv.hostPlatform.system}.release;
+in {
+  home.packages = [ package ];
+  programs.dank-material-shell.plugins.dankCalendar = {
+    enable = true;
+    src = "${package}/share/dms-plugins/DankCalendar";
+  };
+}
 ```
 
 ### Manual
 
 ```sh
-go build -o dankcalendar ./cmd/dankcalendar
-cp dankcalendar ~/.local/bin/
-cp -r . ~/.config/DankMaterialShell/plugins/DankCalendar/
+git clone --branch v0.7.0 https://github.com/alcxyz/DankCalendar.git
+cd DankCalendar
+python3 scripts/package.py --release --output dist/release
+install -Dm755 dist/release/bin/dankcalendar ~/.local/bin/dankcalendar
+mkdir -p ~/.config/DankMaterialShell/plugins/DankCalendar
+cp -R dist/release/share/dms-plugins/DankCalendar/. \
+  ~/.config/DankMaterialShell/plugins/DankCalendar/
 ```
 
 ## Set up an account
@@ -91,3 +98,24 @@ Google's CalDAV endpoint. Follow
 - **BTC:** `bc1pzdt3rjhnme90ev577n0cnxvlwvclf4ys84t2kfeu9rd3rqpaaafsgmxrfa`
 - **ETH / ERC-20:** `0x2122c7817381B74762318b506c19600fF8B8372c`
 </details>
+
+## Build identity
+
+The tracked `plugin.json` remains a release version. Development packages stamp
+`X.Y.Z-dev.<commit>` (plus `.dirty` for local changes) into both the helper and
+the installed manifest. Build them with:
+
+```sh
+python3 scripts/package.py --output dist/dev
+```
+
+Install `dist/dev/bin/dankcalendar` and use
+`dist/dev/share/dms-plugins/DankCalendar` as the DMS plugin directory. In Nix,
+use `packages.<system>.default` and its `share/dms-plugins/DankCalendar`
+subdirectory, passing the source revision when using `callPackage`.
+
+Release packages use the stable version: manual `--release` requires a clean
+checkout at the manifest's `vX.Y.Z` tag; use `#release` with a published tag for
+Nix release builds. Source-only Nix imports use a public-source fingerprint;
+manual archives without Git metadata are labelled `dev.unknown`. Direct
+`go build` identifies the helper's commit but does not stage a DMS manifest.

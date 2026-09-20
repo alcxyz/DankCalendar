@@ -13,8 +13,9 @@
         version = (builtins.fromJSON (builtins.readFile ./plugin.json)).version;
       in {
         packages = rec {
-          dankcalendar = pkgs.callPackage ./default.nix { inherit version; };
+          dankcalendar = pkgs.callPackage ./default.nix { inherit version; revision = self.rev or self.dirtyRev or null; };
           default = dankcalendar;
+          release = dankcalendar.override { release = true; };
         };
 
         devShells.default = pkgs.mkShell {
