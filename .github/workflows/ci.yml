@@ -54,6 +54,54 @@ jobs:
                   raise SystemExit(f"plugin.json {field} does not reference a local file: {value!r}")
           PY
 
+      - name: Validate CHANGELOG.md
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          with open("plugin.json", encoding="utf-8") as f:
+              version = json.load(f)["version"]
+
+          try:
+              text = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          except FileNotFoundError:
+              raise SystemExit("CHANGELOG.md is required: keep an [Unreleased] section and one dated section per released version")
+
+          heading = re.compile(
+              r"^## \[(?:(Unreleased)|((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)))\](?: - (\d{4}-\d{2}-\d{2}))?$"
+          )
+          order = []
+          sections = {}
+          current = None
+          for line in text.splitlines():
+              if not line.startswith("## "):
+                  if current is not None:
+                      sections[current].append(line)
+                  continue
+              match = heading.match(line)
+              if not match:
+                  raise SystemExit(f"CHANGELOG.md heading must be '## [Unreleased]' or '## [X.Y.Z] - YYYY-MM-DD': {line!r}")
+              unreleased, released, date = match.groups()
+              if released and not date:
+                  raise SystemExit(f"CHANGELOG.md released section needs a date: {line!r}")
+              if unreleased and date:
+                  raise SystemExit("CHANGELOG.md [Unreleased] section must not carry a date")
+              current = unreleased or released
+              if current in sections:
+                  raise SystemExit(f"CHANGELOG.md has duplicate section [{current}]")
+              order.append(current)
+              sections[current] = []
+
+          if order[:1] != ["Unreleased"]:
+              raise SystemExit("CHANGELOG.md must start with an '## [Unreleased]' section")
+          if version not in sections:
+              raise SystemExit(f"CHANGELOG.md has no '## [{version}]' section for plugin.json version {version}")
+          if not any(line.strip() for line in sections[version]):
+              raise SystemExit(f"CHANGELOG.md section [{version}] is empty; describe the release before publishing it")
+          PY
+
       - uses: actions/setup-go@v6
         if: ${{ hashFiles('go.mod') != '' }}
         with:
@@ -120,6 +168,51 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${VERSION}" >/dev/null
           echo "should_release=true" >> "$GITHUB_OUTPUT"
 
+      - name: Render release notes
+        if: steps.release_tag.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          version = os.environ["VERSION"].removeprefix("v")
+          repository = os.environ["GITHUB_REPOSITORY"]
+          text = Path("CHANGELOG.md").read_text(encoding="utf-8")
+
+          heading = re.compile(r"^## \[([^\]]+)\](?: - \d{4}-\d{2}-\d{2})?$")
+          sections = {}
+          current = None
+          for line in text.splitlines():
+              match = heading.match(line) if line.startswith("## ") else None
+              if match:
+                  current = match.group(1)
+                  sections[current] = []
+              elif current is not None:
+                  sections[current].append(line)
+
+          body = "\n".join(sections.get(version, [])).strip("\n")
+          if not body.strip():
+              raise SystemExit(f"CHANGELOG.md has no content for [{version}]")
+
+          def parse(tag):
+              match = re.fullmatch(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", tag)
+              return tuple(int(part) for part in match.groups()) if match else None
+
+          tags = subprocess.run(["git", "tag", "--list", "v*"], check=True, capture_output=True, text=True).stdout.split()
+          current_key = parse(f"v{version}")
+          previous = max((parse(tag) for tag in tags if parse(tag) and parse(tag) < current_key), default=None)
+          if previous:
+              link = f"https://github.com/{repository}/compare/v{'.'.join(map(str, previous))}...v{version}"
+          else:
+              link = f"https://github.com/{repository}/commits/v{version}"
+
+          Path("release-notes.md").write_text(f"{body}\n\n**Full changelog:** {link}\n", encoding="utf-8")
+          PY
+
       - name: Create GitHub Release
         if: steps.release_tag.outputs.should_release == 'true'
         env:
@@ -131,13 +224,14 @@ jobs:
           if gh release view "$VERSION" >/dev/null 2>&1; then
             gh release edit "$VERSION" \
               --target "$TARGET_SHA" \
+              --notes-file release-notes.md \
               --verify-tag
           else
             gh release create "$VERSION" \
               --target "$TARGET_SHA" \
               --latest \
               --verify-tag \
-              --generate-notes
+              --notes-file release-notes.md
           fi
 
           RELEASE_ID="$(gh release view "$VERSION" --json databaseId --jq '.databaseId')"
